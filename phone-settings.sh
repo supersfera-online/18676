@@ -7,35 +7,35 @@ NC='\033[0m'
 
 show_menu() {
     echo -e "${GREEN}======================================${NC}"
-    echo -e "${GREEN}  Samsung S22+ — Управление           ${NC}"
+    echo -e "${GREEN}  Samsung S22+ — Control              ${NC}"
     echo -e "${GREEN}======================================${NC}"
     echo ""
-    echo -e "  ${CYAN}1${NC}  Информация о батарее"
-    echo -e "  ${CYAN}2${NC}  Статус Wi-Fi"
-    echo -e "  ${CYAN}3${NC}  Включить/выключить фонарик"
-    echo -e "  ${CYAN}4${NC}  Управление громкостью"
-    echo -e "  ${CYAN}5${NC}  Сделать фото"
-    echo -e "  ${CYAN}6${NC}  Информация о SIM-карте"
-    echo -e "  ${CYAN}7${NC}  Отправить уведомление"
-    echo -e "  ${CYAN}8${NC}  Вибрация"
-    echo -e "  ${CYAN}9${NC}  Буфер обмена"
-    echo -e "  ${CYAN}10${NC} Местоположение (GPS)"
-    echo -e "  ${CYAN}11${NC} Список датчиков"
-    echo -e "  ${CYAN}12${NC} Поделиться текстом"
-    echo -e "  ${CYAN}0${NC}  Выход"
+    echo -e "  ${CYAN}1${NC}  Battery info"
+    echo -e "  ${CYAN}2${NC}  Wi-Fi status"
+    echo -e "  ${CYAN}3${NC}  Toggle torch"
+    echo -e "  ${CYAN}4${NC}  Volume control"
+    echo -e "  ${CYAN}5${NC}  Take photo"
+    echo -e "  ${CYAN}6${NC}  SIM card info"
+    echo -e "  ${CYAN}7${NC}  Send notification"
+    echo -e "  ${CYAN}8${NC}  Vibration"
+    echo -e "  ${CYAN}9${NC}  Clipboard"
+    echo -e "  ${CYAN}10${NC} Location (GPS)"
+    echo -e "  ${CYAN}11${NC} Sensor list"
+    echo -e "  ${CYAN}12${NC} Share text"
+    echo -e "  ${CYAN}0${NC}  Exit"
     echo ""
 }
 
 battery_info() {
-    echo -e "${YELLOW}Батарея:${NC}"
+    echo -e "${YELLOW}Battery:${NC}"
     termux-battery-status | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
-print(f\"  Уровень:      {d.get('percentage', '?')}%\")
-print(f\"  Статус:       {d.get('status', '?')}\")
-print(f\"  Здоровье:     {d.get('health', '?')}\")
-print(f\"  Температура:  {d.get('temperature', '?')}°C\")
-print(f\"  Источник:     {d.get('plugged', '?')}\")
+print(f\"  Level:        {d.get('percentage', '?')}%\")
+print(f\"  Status:       {d.get('status', '?')}\")
+print(f\"  Health:       {d.get('health', '?')}\")
+print(f\"  Temperature:  {d.get('temperature', '?')}°C\")
+print(f\"  Power source: {d.get('plugged', '?')}\")
 "
 }
 
@@ -44,28 +44,28 @@ wifi_info() {
     termux-wifi-connectioninfo | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
-print(f\"  Сеть (SSID):  {d.get('ssid', '?')}\")
-print(f\"  BSSID:        {d.get('bssid', '?')}\")
-print(f\"  IP:           {d.get('ip', '?')}\")
-print(f\"  Сигнал:       {d.get('rssi', '?')} dBm\")
-print(f\"  Скорость:     {d.get('link_speed_mbps', '?')} Mbps\")
-print(f\"  Частота:      {d.get('frequency_mhz', '?')} MHz\")
+print(f\"  Network (SSID): {d.get('ssid', '?')}\")
+print(f\"  BSSID:          {d.get('bssid', '?')}\")
+print(f\"  IP:             {d.get('ip', '?')}\")
+print(f\"  Signal:         {d.get('rssi', '?')} dBm\")
+print(f\"  Speed:          {d.get('link_speed_mbps', '?')} Mbps\")
+print(f\"  Frequency:      {d.get('frequency_mhz', '?')} MHz\")
 "
 }
 
 toggle_torch() {
-    echo -n "Включить (on) или выключить (off) фонарик? "
+    echo -n "Turn the torch on (on) or off (off)? "
     read -r choice
     if [ "$choice" = "on" ] || [ "$choice" = "off" ]; then
         termux-torch "$choice"
-        echo -e "${GREEN}Фонарик: $choice${NC}"
+        echo -e "${GREEN}Torch: $choice${NC}"
     else
-        echo "Введите 'on' или 'off'"
+        echo "Enter 'on' or 'off'"
     fi
 }
 
 volume_control() {
-    echo -e "${YELLOW}Текущая громкость:${NC}"
+    echo -e "${YELLOW}Current volume:${NC}"
     termux-volume | python3 -c "
 import sys, json
 streams = json.load(sys.stdin)
@@ -73,25 +73,25 @@ for s in streams:
     print(f\"  {s['stream']:12s}: {s['volume']}/{s['max_volume']}\")
 "
     echo ""
-    echo "Изменить громкость? (music/ring/alarm/notification)"
+    echo "Change volume? (music/ring/alarm/notification)"
     read -r stream
     if [ -n "$stream" ]; then
-        echo "Введите уровень (0-15):"
+        echo "Enter level (0-15):"
         read -r level
         termux-volume "$stream" "$level"
-        echo -e "${GREEN}Громкость $stream установлена на $level${NC}"
+        echo -e "${GREEN}Volume $stream set to $level${NC}"
     fi
 }
 
 take_photo() {
     PHOTO_PATH="$HOME/storage/dcim/termux_photo_$(date +%Y%m%d_%H%M%S).jpg"
-    echo "Делаю фото..."
+    echo "Taking photo..."
     termux-camera-photo "$PHOTO_PATH"
-    echo -e "${GREEN}Фото сохранено: $PHOTO_PATH${NC}"
+    echo -e "${GREEN}Photo saved: $PHOTO_PATH${NC}"
 }
 
 sim_info() {
-    echo -e "${YELLOW}SIM-карта:${NC}"
+    echo -e "${YELLOW}SIM card:${NC}"
     termux-telephony-deviceinfo | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -102,67 +102,67 @@ for k, v in d.items():
 }
 
 send_notification() {
-    echo "Заголовок:"
+    echo "Title:"
     read -r title
-    echo "Текст:"
+    echo "Text:"
     read -r text
     termux-notification --title "$title" --content "$text"
-    echo -e "${GREEN}Уведомление отправлено!${NC}"
+    echo -e "${GREEN}Notification sent!${NC}"
 }
 
 vibrate() {
-    echo "Длительность вибрации (мс, по умолчанию 500):"
+    echo "Vibration duration (ms, default 500):"
     read -r duration
     duration=${duration:-500}
     termux-vibrate -d "$duration"
-    echo -e "${GREEN}Вибрация: ${duration}мс${NC}"
+    echo -e "${GREEN}Vibration: ${duration}ms${NC}"
 }
 
 clipboard() {
-    echo "1 — Показать буфер обмена"
-    echo "2 — Скопировать текст в буфер"
+    echo "1 — Show clipboard"
+    echo "2 — Copy text to clipboard"
     read -r choice
     case $choice in
         1)
-            echo -e "${YELLOW}Буфер обмена:${NC}"
+            echo -e "${YELLOW}Clipboard:${NC}"
             termux-clipboard-get
             ;;
         2)
-            echo "Введите текст:"
+            echo "Enter text:"
             read -r text
             echo -n "$text" | termux-clipboard-set
-            echo -e "${GREEN}Скопировано!${NC}"
+            echo -e "${GREEN}Copied!${NC}"
             ;;
     esac
 }
 
 location_info() {
-    echo "Получаю местоположение (может занять несколько секунд)..."
+    echo "Getting location (may take a few seconds)..."
     termux-location | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
-print(f\"  Широта:   {d.get('latitude', '?')}\")
-print(f\"  Долгота:  {d.get('longitude', '?')}\")
-print(f\"  Высота:   {d.get('altitude', '?')} м\")
-print(f\"  Точность: {d.get('accuracy', '?')} м\")
+print(f\"  Latitude:  {d.get('latitude', '?')}\")
+print(f\"  Longitude: {d.get('longitude', '?')}\")
+print(f\"  Altitude:  {d.get('altitude', '?')} m\")
+print(f\"  Accuracy:  {d.get('accuracy', '?')} m\")
 "
 }
 
 sensor_list() {
-    echo -e "${YELLOW}Датчики устройства:${NC}"
+    echo -e "${YELLOW}Device sensors:${NC}"
     termux-sensor -l 2>/dev/null | head -30
 }
 
 share_text() {
-    echo "Введите текст для отправки:"
+    echo "Enter text to share:"
     read -r text
     echo "$text" | termux-share -a send
-    echo -e "${GREEN}Открыто меню 'Поделиться'${NC}"
+    echo -e "${GREEN}Opened the 'Share' menu${NC}"
 }
 
 while true; do
     show_menu
-    echo -n "Выберите действие: "
+    echo -n "Select an action: "
     read -r action
     echo ""
 
@@ -179,10 +179,10 @@ while true; do
         10) location_info ;;
         11) sensor_list ;;
         12) share_text ;;
-        0) echo "Выход."; exit 0 ;;
-        *) echo -e "Неизвестная команда: $action" ;;
+        0) echo "Exit."; exit 0 ;;
+        *) echo -e "Unknown command: $action" ;;
     esac
     echo ""
-    echo "Нажмите Enter для продолжения..."
+    echo "Press Enter to continue..."
     read -r
 done

@@ -7,7 +7,7 @@ from phone_remnants import phone_remnants, PROBES
 
 
 def show_actions(remnants):
-    print("\nДоступные действия:")
+    print("\nAvailable actions:")
     print(f"{'─' * 60}")
     for r in sorted(remnants, key=lambda x: x.complexity):
         effects = ", ".join(r.effects)
@@ -17,7 +17,7 @@ def show_actions(remnants):
 
 
 def show_graph(remnants):
-    print("\nГраф зависимостей:")
+    print("\nDependency graph:")
     print(f"{'─' * 60}")
 
     available_facts = set()
@@ -33,9 +33,9 @@ def show_graph(remnants):
         if not layer:
             break
 
-        print(f"\n  Уровень {level}:")
+        print(f"\n  Level {level}:")
         for r in sorted(layer, key=lambda x: x.complexity):
-            deps = " + ".join(r.preconditions) if r.preconditions else "(нет)"
+            deps = " + ".join(r.preconditions) if r.preconditions else "(none)"
             eff = ", ".join(r.effects)
             print(f"    [{r.complexity:>4}] {r.name:<30} {deps} → {eff}")
             placed.add(r.name)
@@ -45,13 +45,13 @@ def show_graph(remnants):
 
     unplaced = [r for r in remnants if r.name not in placed]
     if unplaced:
-        print(f"\n  Не размещены (возможен цикл):")
+        print(f"\n  Not placed (possible cycle):")
         for r in unplaced:
             print(f"    {r.name}: {r.preconditions} → {r.effects}")
 
 
 def probe_reality():
-    print("\nОпрос реальности...")
+    print("\nProbing reality...")
     print(f"{'─' * 40}")
     state = set()
     for fact, check in PROBES.items():
@@ -63,38 +63,38 @@ def probe_reality():
             if result:
                 state.add(fact)
         except Exception:
-            print(f"  ? {fact} (ошибка проверки)")
-    print(f"\nТекущее состояние: {sorted(state) if state else '(пусто)'}")
+            print(f"  ? {fact} (check error)")
+    print(f"\nCurrent state: {sorted(state) if state else '(empty)'}")
     return state
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Планировщик-исполнитель для Samsung Galaxy S22+"
+        description="Planner-executor for Samsung Galaxy S22+"
     )
     parser.add_argument(
         "--target", nargs="*", default=["fully_configured"],
-        help="Целевое состояние (по умолчанию: fully_configured)"
+        help="Target state (default: fully_configured)"
     )
     parser.add_argument(
         "--dry-run", action="store_true",
-        help="Только показать план, не выполнять"
+        help="Only show the plan, do not execute"
     )
     parser.add_argument(
         "--probe", action="store_true",
-        help="Только опросить текущее состояние"
+        help="Only probe the current state"
     )
     parser.add_argument(
         "--list", action="store_true",
-        help="Показать все доступные действия"
+        help="Show all available actions"
     )
     parser.add_argument(
         "--graph", action="store_true",
-        help="Показать граф зависимостей"
+        help="Show the dependency graph"
     )
     parser.add_argument(
         "--skip-probe", action="store_true",
-        help="Не опрашивать реальность, считать что ничего нет"
+        help="Do not probe reality; assume nothing is present"
     )
 
     args = parser.parse_args()
@@ -114,7 +114,7 @@ def main():
 
     if args.skip_probe:
         initial = set()
-        print("\nПропуск опроса. Начальное состояние: (пусто)")
+        print("\nSkipping probe. Initial state: (empty)")
     else:
         initial = probe_reality()
 
@@ -123,25 +123,25 @@ def main():
     target = set(args.target)
     already = target & initial
     if already:
-        print(f"\nУже достигнуто: {sorted(already)}")
+        print(f"\nAlready achieved: {sorted(already)}")
         target -= already
 
     if not target:
-        print("\nЦель уже достигнута. Нечего делать.")
+        print("\nGoal already achieved. Nothing to do.")
         return
 
-    print(f"\nЦель: {sorted(target)}")
+    print(f"\nGoal: {sorted(target)}")
     planner = Planner(remnants)
 
     try:
         plan = planner.plan(initial, target)
     except RuntimeError as e:
-        print(f"\nОшибка планирования: {e}")
+        print(f"\nPlanning error: {e}")
         sys.exit(1)
 
     crit_path, crit_cost = planner.critical_path(plan, initial)
     if crit_path:
-        print(f"\nКритический путь (сложность {crit_cost}):")
+        print(f"\nCritical path (complexity {crit_cost}):")
         for r in crit_path:
             print(f"  → {r.name} ({r.complexity})")
 

@@ -19,34 +19,34 @@ def phone_remnants() -> list[InformationRemnant]:
 
     return [
         InformationRemnant(
-            name="Обновить Termux",
+            name="Update Termux",
             preconditions=["termux_ready"],
             effects=["packages_updated"],
             complexity=3,
             action=shell("pkg update -y && pkg upgrade -y"),
-            description="Обновить все пакеты Termux до последних версий",
+            description="Update all Termux packages to the latest versions",
         ),
 
         InformationRemnant(
-            name="Настроить хранилище",
+            name="Set up storage",
             preconditions=["termux_ready"],
             effects=["storage_accessible"],
             complexity=0.5,
             action=shell("termux-setup-storage"),
-            description="Дать Termux доступ к файлам телефона (фото, загрузки и т.д.)",
+            description="Give Termux access to phone files (photos, downloads, etc.)",
         ),
 
         InformationRemnant(
-            name="Установить Termux:API",
+            name="Install Termux:API",
             preconditions=["termux_ready", "packages_updated"],
             effects=["termux_api_ready"],
             complexity=1,
             action=shell("pkg install -y termux-api"),
-            description="Пакет для доступа к датчикам и настройкам телефона",
+            description="Package for access to phone sensors and settings",
         ),
 
         InformationRemnant(
-            name="Установить Python",
+            name="Install Python",
             preconditions=["termux_ready", "packages_updated"],
             effects=["python_ready"],
             complexity=1,
@@ -54,7 +54,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Установить Git",
+            name="Install Git",
             preconditions=["termux_ready", "packages_updated"],
             effects=["git_ready"],
             complexity=0.5,
@@ -62,7 +62,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Установить Node.js",
+            name="Install Node.js",
             preconditions=["termux_ready", "packages_updated"],
             effects=["nodejs_ready"],
             complexity=2,
@@ -70,16 +70,16 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Установить Claude Code",
+            name="Install Claude Code",
             preconditions=["nodejs_ready", "has_internet"],
             effects=["claude_installed"],
             complexity=3,
             action=shell("npm install -g @anthropic-ai/claude-code"),
-            description="Установить Claude Code CLI глобально через npm",
+            description="Install the Claude Code CLI globally via npm",
         ),
 
         InformationRemnant(
-            name="Проверить интернет",
+            name="Check internet",
             preconditions=["termux_ready"],
             effects=["has_internet"],
             complexity=0.1,
@@ -87,7 +87,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Информация Wi-Fi",
+            name="Wi-Fi info",
             preconditions=["termux_api_ready", "wifi_connected"],
             effects=["wifi_info_known"],
             complexity=0.2,
@@ -95,7 +95,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Сканировать Wi-Fi сети",
+            name="Scan Wi-Fi networks",
             preconditions=["termux_api_ready"],
             effects=["wifi_scanned"],
             complexity=0.5,
@@ -103,7 +103,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Статус батареи",
+            name="Battery status",
             preconditions=["termux_api_ready"],
             effects=["battery_known"],
             complexity=0.1,
@@ -111,7 +111,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Информация о SIM",
+            name="SIM info",
             preconditions=["termux_api_ready"],
             effects=["sim_info_known"],
             complexity=0.2,
@@ -119,16 +119,16 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Местоположение",
+            name="Location",
             preconditions=["termux_api_ready"],
             effects=["location_known"],
             complexity=1,
             action=shell("termux-location -p gps"),
-            description="Получить GPS-координаты (может занять несколько секунд)",
+            description="Get GPS coordinates (may take a few seconds)",
         ),
 
         InformationRemnant(
-            name="Список датчиков",
+            name="Sensor list",
             preconditions=["termux_api_ready"],
             effects=["sensors_listed"],
             complexity=0.2,
@@ -136,7 +136,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Фонарик ВКЛ",
+            name="Torch ON",
             preconditions=["termux_api_ready"],
             effects=["torch_on"],
             complexity=0.1,
@@ -144,7 +144,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Фонарик ВЫКЛ",
+            name="Torch OFF",
             preconditions=["termux_api_ready"],
             effects=["torch_off"],
             complexity=0.1,
@@ -152,7 +152,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Вибрация",
+            name="Vibration",
             preconditions=["termux_api_ready"],
             effects=["vibrated"],
             complexity=0.1,
@@ -160,7 +160,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Показать громкость",
+            name="Show volume",
             preconditions=["termux_api_ready"],
             effects=["volume_known"],
             complexity=0.1,
@@ -168,15 +168,15 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Уведомление",
+            name="Notification",
             preconditions=["termux_api_ready"],
             effects=["notification_sent"],
             complexity=0.2,
-            action=shell('termux-notification --title "Claude" --content "Привет с телефона!"'),
+            action=shell('termux-notification --title "Claude" --content "Hello from the phone!"'),
         ),
 
         InformationRemnant(
-            name="Сделать фото",
+            name="Take photo",
             preconditions=["termux_api_ready", "storage_accessible"],
             effects=["photo_taken"],
             complexity=1,
@@ -184,7 +184,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Буфер обмена — прочитать",
+            name="Clipboard — read",
             preconditions=["termux_api_ready"],
             effects=["clipboard_read"],
             complexity=0.1,
@@ -192,7 +192,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Показать загрузки",
+            name="Show downloads",
             preconditions=["storage_accessible"],
             effects=["downloads_listed"],
             complexity=0.1,
@@ -200,7 +200,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Показать фото",
+            name="Show photos",
             preconditions=["storage_accessible"],
             effects=["photos_listed"],
             complexity=0.1,
@@ -208,7 +208,7 @@ def phone_remnants() -> list[InformationRemnant]:
         ),
 
         InformationRemnant(
-            name="Полная готовность",
+            name="Fully ready",
             preconditions=[
                 "packages_updated", "termux_api_ready", "storage_accessible",
                 "python_ready", "nodejs_ready", "git_ready",
@@ -216,7 +216,7 @@ def phone_remnants() -> list[InformationRemnant]:
             ],
             effects=["fully_configured"],
             complexity=0.1,
-            action=shell("echo '=== Samsung S22+ полностью настроен для Claude Code ==='"),
-            description="Все компоненты установлены и готовы к работе",
+            action=shell("echo '=== Samsung S22+ is fully configured for Claude Code ==='"),
+            description="All components installed and ready",
         ),
     ]

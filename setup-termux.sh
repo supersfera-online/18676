@@ -8,33 +8,33 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 echo -e "${GREEN}======================================${NC}"
-echo -e "${GREEN} Claude Code — Установка на телефон   ${NC}"
+echo -e "${GREEN} Claude Code — Install on phone       ${NC}"
 echo -e "${GREEN} Samsung Galaxy S22+                  ${NC}"
 echo -e "${GREEN}======================================${NC}"
 echo ""
 
-echo -e "${YELLOW}[1/6] Обновляю пакеты Termux...${NC}"
+echo -e "${YELLOW}[1/6] Updating Termux packages...${NC}"
 pkg update -y && pkg upgrade -y
 
-echo -e "${YELLOW}[2/6] Устанавливаю Node.js, Git, Python...${NC}"
+echo -e "${YELLOW}[2/6] Installing Node.js, Git, Python...${NC}"
 pkg install -y nodejs-lts git python
 
-echo -e "${YELLOW}[3/6] Настраиваю доступ к хранилищу телефона...${NC}"
-echo "Нажмите 'Разрешить' во всплывающем окне!"
+echo -e "${YELLOW}[3/6] Setting up access to phone storage...${NC}"
+echo "Tap 'Allow' in the popup!"
 termux-setup-storage
 
-echo -e "${YELLOW}[4/6] Устанавливаю Termux:API...${NC}"
+echo -e "${YELLOW}[4/6] Installing Termux:API...${NC}"
 pkg install -y termux-api
 
-echo -e "${YELLOW}[5/6] Устанавливаю Claude Code...${NC}"
+echo -e "${YELLOW}[5/6] Installing Claude Code...${NC}"
 npm install -g @anthropic-ai/claude-code
 
-echo -e "${YELLOW}[6/6] Проверяю установку...${NC}"
+echo -e "${YELLOW}[6/6] Verifying installation...${NC}"
 echo ""
 
-NODE_VER=$(node --version 2>/dev/null || echo "не найден")
-NPM_VER=$(npm --version 2>/dev/null || echo "не найден")
-CLAUDE_VER=$(claude --version 2>/dev/null || echo "не найден")
+NODE_VER=$(node --version 2>/dev/null || echo "not found")
+NPM_VER=$(npm --version 2>/dev/null || echo "not found")
+CLAUDE_VER=$(claude --version 2>/dev/null || echo "not found")
 
 echo -e "  Node.js:     ${GREEN}${NODE_VER}${NC}"
 echo -e "  npm:         ${GREEN}${NPM_VER}${NC}"
@@ -43,21 +43,21 @@ echo ""
 
 if command -v claude &> /dev/null; then
     echo -e "${GREEN}======================================${NC}"
-    echo -e "${GREEN}  Готово! Claude Code установлен!     ${NC}"
+    echo -e "${GREEN}  Done! Claude Code installed!        ${NC}"
     echo -e "${GREEN}======================================${NC}"
     echo ""
-    echo "Для начала работы:"
+    echo "To get started:"
     echo ""
-    echo "  1. Введите:  claude"
-    echo "  2. При первом запуске введите API-ключ"
-    echo "     (получить на console.anthropic.com)"
+    echo "  1. Run:  claude"
+    echo "  2. On first launch, enter your API key"
+    echo "     (get it at console.anthropic.com)"
     echo ""
-    echo "Полезные команды:"
-    echo "  claude          — запустить Claude Code"
-    echo "  cd ~/storage    — перейти к файлам телефона"
+    echo "Useful commands:"
+    echo "  claude          — run Claude Code"
+    echo "  cd ~/storage    — go to phone files"
     echo ""
 else
-    echo -e "${RED}Ошибка: Claude Code не установился.${NC}"
-    echo "Попробуйте вручную: npm install -g @anthropic-ai/claude-code"
+    echo -e "${RED}Error: Claude Code did not install.${NC}"
+    echo "Try manually: npm install -g @anthropic-ai/claude-code"
     exit 1
 fi

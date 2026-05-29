@@ -1,32 +1,32 @@
-# Claude Code на Samsung Galaxy S22+
+# Claude Code on Samsung Galaxy S22+
 
-Пошаговая инструкция по установке Claude Code на телефон через Termux.
+Step-by-step guide to installing Claude Code on a phone via Termux.
 
-## Шаг 1: Установить Termux
+## Step 1: Install Termux
 
-**Важно:** Скачивайте Termux только с F-Droid, НЕ из Google Play (там устаревшая версия).
+**Important:** Download Termux only from F-Droid, NOT from Google Play (the version there is outdated).
 
-1. Откройте браузер на телефоне
-2. Перейдите на https://f-droid.org/
-3. Скачайте и установите F-Droid
-4. В F-Droid найдите и установите **Termux**
-5. Также установите **Termux:API** (для доступа к настройкам телефона)
+1. Open the browser on your phone
+2. Go to https://f-droid.org/
+3. Download and install F-Droid
+4. In F-Droid, find and install **Termux**
+5. Also install **Termux:API** (for access to phone settings)
 
-## Шаг 2: Запустить установку
+## Step 2: Run the installation
 
-Откройте Termux и выполните по очереди:
+Open Termux and run the following in order:
 
 ```bash
-# Скачать скрипт установки
+# Download the install script
 pkg install -y git
-git clone https://github.com/ВАШ_РЕПО/New.git
+git clone https://github.com/YOUR_REPO/New.git
 cd New
 
-# Запустить установку
+# Run the installation
 bash setup-termux.sh
 ```
 
-Или вручную, если не хотите клонировать репо:
+Or manually, if you do not want to clone the repo:
 
 ```bash
 pkg update -y && pkg upgrade -y
@@ -35,89 +35,89 @@ npm install -g @anthropic-ai/claude-code
 termux-setup-storage
 ```
 
-## Шаг 3: Получить API-ключ
+## Step 3: Get an API key
 
-1. Перейдите на https://console.anthropic.com/
-2. Зарегистрируйтесь / войдите
-3. Перейдите в раздел API Keys
-4. Создайте новый ключ
-5. Скопируйте его
+1. Go to https://console.anthropic.com/
+2. Sign up / log in
+3. Go to the API Keys section
+4. Create a new key
+5. Copy it
 
-## Шаг 4: Запустить Claude Code
+## Step 4: Run Claude Code
 
 ```bash
 claude
 ```
 
-При первом запуске введите API-ключ из шага 3.
+On first launch, enter the API key from Step 3.
 
-## Что Claude Code может делать на телефоне
+## What Claude Code can do on a phone
 
-После установки Claude Code работает на телефоне так же, как на компьютере:
+After installation, Claude Code works on a phone the same way as on a computer:
 
-- Читать и редактировать файлы
-- Запускать команды в терминале
-- Работать с Git
-- Писать и запускать скрипты
+- Read and edit files
+- Run commands in the terminal
+- Work with Git
+- Write and run scripts
 
-### Доступ к файлам телефона
+### Access to phone files
 
 ```bash
-# Фотографии
+# Photos
 ls ~/storage/dcim/
 
-# Загрузки
+# Downloads
 ls ~/storage/downloads/
 
-# Документы
+# Documents
 ls ~/storage/documents/
 ```
 
-### Информация о телефоне (нужен Termux:API)
+### Phone information (requires Termux:API)
 
 ```bash
-# Уровень батареи
+# Battery level
 termux-battery-status
 
-# Информация о Wi-Fi
+# Wi-Fi info
 termux-wifi-connectioninfo
 
-# Громкость
+# Volume
 termux-volume
 
-# Фонарик
+# Torch
 termux-torch on
 termux-torch off
 ```
 
-## Решение проблем
+## Troubleshooting
 
 ### "Permission denied"
 ```bash
 termux-setup-storage
 ```
-Нажмите "Разрешить" во всплывающем окне.
+Tap "Allow" in the popup.
 
 ### "npm: command not found"
 ```bash
 pkg install -y nodejs-lts
 ```
 
-### Claude Code не запускается
+### Claude Code does not start
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
 
-### Мало места
+### Low on space
 ```bash
-# Проверить свободное место
+# Check free space
 df -h
-# Очистить кэш npm
+# Clear the npm cache
 npm cache clean --force
 ```
 
-## Советы
+## Tips
 
-- Используйте **внешнюю клавиатуру** по Bluetooth для удобного набора
-- Установите **Termux:Widget** чтобы запускать Claude Code одной кнопкой с рабочего стола
-- Команда `termux-reload-settings` применяет изменения настроек Termux
+- Use an **external Bluetooth keyboard** for comfortable typing
+- Install **Termux:Widget** to launch Claude Code with a single button from the home screen
+- The `termux-reload-settings` command applies Termux settings changes

@@ -22,7 +22,7 @@ class InformationRemnant:
         if not self.can_execute(state):
             missing = [p for p in self.preconditions if p not in state]
             raise RuntimeError(
-                f"[{self.name}] Невозможно: не хватает {missing}"
+                f"[{self.name}] Cannot run: missing {missing}"
             )
 
         success = True
@@ -33,7 +33,7 @@ class InformationRemnant:
             new_state = state | set(self.effects)
             return new_state
         else:
-            raise RuntimeError(f"[{self.name}] Действие провалилось")
+            raise RuntimeError(f"[{self.name}] Action failed")
 
     def __repr__(self):
         return f"Remnant({self.name}, {self.preconditions} → {self.effects}, c={self.complexity})"
@@ -50,7 +50,7 @@ def shell(cmd: str) -> Callable:
             print(f"  {result.stdout.strip()}")
         if result.returncode != 0:
             if result.stderr.strip():
-                print(f"  ОШИБКА: {result.stderr.strip()}")
+                print(f"  ERROR: {result.stderr.strip()}")
             return False
         return True
     return run
@@ -90,7 +90,7 @@ class Planner:
             producers = self._producers.get(fact, [])
             if not producers:
                 raise RuntimeError(
-                    f"Невозможно достичь '{fact}': нет действия, которое его производит"
+                    f"Cannot reach '{fact}': no action produces it"
                 )
 
             best = min(producers, key=lambda r: r.complexity)
@@ -112,7 +112,7 @@ class Planner:
             ready = [r for r in remaining if r.can_execute(available)]
             if not ready:
                 stuck = [r.name for r in remaining]
-                raise RuntimeError(f"Тупик! Не могу выполнить: {stuck}")
+                raise RuntimeError(f"Deadlock! Cannot execute: {stuck}")
 
             ready.sort(key=lambda r: r.complexity)
 
@@ -174,19 +174,19 @@ class Executor:
     def execute_plan(self, plan: list[InformationRemnant], dry_run: bool = False) -> set[str]:
         total = sum(r.complexity for r in plan)
         print(f"\n{'=' * 50}")
-        print(f"  План: {len(plan)} действий, сложность: {total}")
+        print(f"  Plan: {len(plan)} actions, complexity: {total}")
         print(f"{'=' * 50}\n")
 
         for i, remnant in enumerate(plan, 1):
             prefix = "[DRY]" if dry_run else f"[{i}/{len(plan)}]"
-            print(f"{prefix} {remnant.name} (сложность: {remnant.complexity})")
+            print(f"{prefix} {remnant.name} (complexity: {remnant.complexity})")
 
             if remnant.description:
                 print(f"       {remnant.description}")
 
             if not remnant.can_execute(self.state):
                 missing = [p for p in remnant.preconditions if p not in self.state]
-                print(f"  ✗ ПРОПУСК: не хватает {missing}")
+                print(f"  ✗ SKIP: missing {missing}")
                 continue
 
             if dry_run:
@@ -197,13 +197,13 @@ class Executor:
             try:
                 self.state = remnant.execute(self.state)
                 self.history.append((remnant.name, set(self.state)))
-                print(f"  ✓ Готово → состояние: +{remnant.effects}")
+                print(f"  ✓ Done → state: +{remnant.effects}")
             except RuntimeError as e:
                 print(f"  ✗ {e}")
-                print(f"\nОстановка на шаге {i}. Состояние мира: {self.state}")
+                print(f"\nStopped at step {i}. World state: {self.state}")
                 return self.state
 
         print(f"\n{'=' * 50}")
-        print(f"  Финальное состояние: {sorted(self.state)}")
+        print(f"  Final state: {sorted(self.state)}")
         print(f"{'=' * 50}")
         return self.state
