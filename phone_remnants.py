@@ -1,15 +1,5 @@
-
-"""
-Флуктуации для Samsung Galaxy S22+.
-Реальные действия, которые трансформируют состояние телефона через Termux.
-"""
-
 from remnant import InformationRemnant, shell, probe
 
-
-# ============================================================
-# Пробы — узнать текущее состояние реальности
-# ============================================================
 
 PROBES = {
     "termux_ready":      probe("echo $TERMUX_VERSION"),
@@ -25,16 +15,9 @@ PROBES = {
 }
 
 
-# ============================================================
-# Флуктуации — действия, которые меняют реальность
-# ============================================================
-
 def phone_remnants() -> list[InformationRemnant]:
-    """Полный набор действий для настройки и управления Samsung S22+."""
 
     return [
-        # --- Базовая инфраструктура ---
-
         InformationRemnant(
             name="Обновить Termux",
             preconditions=["termux_ready"],
@@ -86,8 +69,6 @@ def phone_remnants() -> list[InformationRemnant]:
             action=shell("pkg install -y nodejs-lts"),
         ),
 
-        # --- Claude Code ---
-
         InformationRemnant(
             name="Установить Claude Code",
             preconditions=["nodejs_ready", "has_internet"],
@@ -96,8 +77,6 @@ def phone_remnants() -> list[InformationRemnant]:
             action=shell("npm install -g @anthropic-ai/claude-code"),
             description="Установить Claude Code CLI глобально через npm",
         ),
-
-        # --- Сеть ---
 
         InformationRemnant(
             name="Проверить интернет",
@@ -122,8 +101,6 @@ def phone_remnants() -> list[InformationRemnant]:
             complexity=0.5,
             action=shell("termux-wifi-scaninfo"),
         ),
-
-        # --- Состояние устройства ---
 
         InformationRemnant(
             name="Статус батареи",
@@ -157,8 +134,6 @@ def phone_remnants() -> list[InformationRemnant]:
             complexity=0.2,
             action=shell("termux-sensor -l"),
         ),
-
-        # --- Управление ---
 
         InformationRemnant(
             name="Фонарик ВКЛ",
@@ -216,8 +191,6 @@ def phone_remnants() -> list[InformationRemnant]:
             action=shell("termux-clipboard-get"),
         ),
 
-        # --- Файловая система ---
-
         InformationRemnant(
             name="Показать загрузки",
             preconditions=["storage_accessible"],
@@ -233,8 +206,6 @@ def phone_remnants() -> list[InformationRemnant]:
             complexity=0.1,
             action=shell("ls -la $HOME/storage/dcim/"),
         ),
-
-        # --- Полная настройка (составная цель) ---
 
         InformationRemnant(
             name="Полная готовность",

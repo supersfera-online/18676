@@ -1,8 +1,4 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# ============================================
-# Claude Code — установка на Samsung Galaxy S22+
-# Запускать внутри Termux
-# ============================================
 
 set -e
 
@@ -17,28 +13,22 @@ echo -e "${GREEN} Samsung Galaxy S22+                  ${NC}"
 echo -e "${GREEN}======================================${NC}"
 echo ""
 
-# --- 1. Обновление пакетов ---
 echo -e "${YELLOW}[1/6] Обновляю пакеты Termux...${NC}"
 pkg update -y && pkg upgrade -y
 
-# --- 2. Установка основных пакетов ---
 echo -e "${YELLOW}[2/6] Устанавливаю Node.js, Git, Python...${NC}"
 pkg install -y nodejs-lts git python
 
-# --- 3. Настройка доступа к файлам телефона ---
 echo -e "${YELLOW}[3/6] Настраиваю доступ к хранилищу телефона...${NC}"
 echo "Нажмите 'Разрешить' во всплывающем окне!"
 termux-setup-storage
 
-# --- 4. Установка Termux:API (для доступа к настройкам телефона) ---
 echo -e "${YELLOW}[4/6] Устанавливаю Termux:API...${NC}"
 pkg install -y termux-api
 
-# --- 5. Установка Claude Code ---
 echo -e "${YELLOW}[5/6] Устанавливаю Claude Code...${NC}"
 npm install -g @anthropic-ai/claude-code
 
-# --- 6. Проверка ---
 echo -e "${YELLOW}[6/6] Проверяю установку...${NC}"
 echo ""
 

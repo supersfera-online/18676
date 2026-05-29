@@ -1,20 +1,4 @@
-
 #!/usr/bin/env python3
-"""
-Планировщик-исполнитель для Samsung Galaxy S22+.
-
-Опрашивает реальность, строит план, выполняет.
-
-Использование:
-  python3 main.py                    — полная настройка телефона
-  python3 main.py --target battery_known torch_on
-  python3 main.py --target fully_configured
-  python3 main.py --dry-run          — показать план без выполнения
-  python3 main.py --probe            — только опросить состояние
-  python3 main.py --list             — показать все доступные действия
-  python3 main.py --graph            — показать граф зависимостей
-"""
-
 import sys
 import argparse
 
@@ -33,12 +17,10 @@ def show_actions(remnants):
 
 
 def show_graph(remnants):
-    """ASCII-граф зависимостей."""
     print("\nГраф зависимостей:")
     print(f"{'─' * 60}")
 
-    # Группировка по уровням (топологически)
-    available_facts = set()  # факты, доступные от предыдущих уровней
+    available_facts = set()
     placed = set()
     level = 0
 
@@ -61,7 +43,6 @@ def show_graph(remnants):
 
         level += 1
 
-    # Оставшиеся (если есть циклы)
     unplaced = [r for r in remnants if r.name not in placed]
     if unplaced:
         print(f"\n  Не размещены (возможен цикл):")
@@ -127,7 +108,6 @@ def main():
         show_graph(remnants)
         return
 
-    # 1. Опросить реальность
     if args.probe:
         probe_reality()
         return
@@ -138,7 +118,6 @@ def main():
     else:
         initial = probe_reality()
 
-    # Termux — всегда, если мы вообще запустились
     initial.add("termux_ready")
 
     target = set(args.target)
@@ -151,7 +130,6 @@ def main():
         print("\nЦель уже достигнута. Нечего делать.")
         return
 
-    # 2. Построить план
     print(f"\nЦель: {sorted(target)}")
     planner = Planner(remnants)
 
@@ -161,14 +139,12 @@ def main():
         print(f"\nОшибка планирования: {e}")
         sys.exit(1)
 
-    # 3. Критический путь
     crit_path, crit_cost = planner.critical_path(plan, initial)
     if crit_path:
         print(f"\nКритический путь (сложность {crit_cost}):")
         for r in crit_path:
             print(f"  → {r.name} ({r.complexity})")
 
-    # 4. Выполнить
     executor = Executor(initial)
     executor.execute_plan(plan, dry_run=args.dry_run)
 

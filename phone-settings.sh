@@ -1,8 +1,4 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# ============================================
-# Утилиты для управления Samsung Galaxy S22+
-# Требует: Termux + Termux:API
-# ============================================
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -164,7 +160,6 @@ share_text() {
     echo -e "${GREEN}Открыто меню 'Поделиться'${NC}"
 }
 
-# --- Главный цикл ---
 while true; do
     show_menu
     echo -n "Выберите действие: "
