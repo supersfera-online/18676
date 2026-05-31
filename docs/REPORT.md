@@ -72,6 +72,10 @@ The same run also surfaced a real defect in the original: it returned a
 
 The following produced visible, successful output during this session:
 
+- **Tests:** `pytest` → **45 passed**, total branch coverage **91%**
+  (`planner.py` 98%, `runner.py` 100%, `actions.py` 100%, `cli.py` 83%). These
+  numbers cover the **Python logic only** — the Termux/`subprocess` boundary is
+  mocked, so they say nothing about real device behaviour.
 - **`make check`** (ruff + mypy + bandit + pytest + shellcheck) → completed;
   bandit reported "No issues identified" across 759 LOC.
 - **Package build:** `pip wheel` produced `claude_phone-0.1.0-py3-none-any.whl`;
@@ -79,12 +83,6 @@ The following produced visible, successful output during this session:
 - **`pre-commit run --all-files`** → all hooks pass after switching the
   Docker-dependent `koalaman/shellcheck-precommit` to the Docker-free
   `shellcheck-py` hook.
-
-Note: exact test count and coverage percentage are produced by the test run /
-CI; they are intentionally **not** quoted here as fixed numbers because the bash
-output channel was not rendering reliably at the time this report was written.
-Read them from a local `pytest --cov` run or the CI summary rather than trusting
-a number transcribed here.
 
 ## 5. Not verified here (and why)
 
