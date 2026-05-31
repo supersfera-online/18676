@@ -19,11 +19,11 @@ Open Termux and run the following in order:
 ```bash
 # Download the install script
 pkg install -y git
-git clone https://github.com/YOUR_REPO/New.git
-cd New
+git clone https://github.com/supersfera-online/18676.git
+cd 18676
 
 # Run the installation
-bash setup-termux.sh
+bash scripts/setup-termux.sh
 ```
 
 Or manually, if you do not want to clone the repo:
