@@ -1,40 +1,61 @@
+"""Generate a context-aware Claude system prompt.
+
+This used to be a standalone demo script; it is now part of the package and is
+exposed through the ``prompt`` CLI subcommand. Session contexts are defined as
+data (:data:`INTEGRATION_PROFILES` / :data:`DEFAULT_PROFILE`) so adding a new
+profile does not mean duplicating prompt-building logic.
+"""
+
+from __future__ import annotations
+
 import datetime
-import json
+import logging
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+# Profiles keyed by user id. Anything not listed falls back to DEFAULT_PROFILE.
+INTEGRATION_PROFILES: dict[str, dict[str, Any]] = {
+    "user_with_integrations": {
+        "model_version": "Claude (Simulated Runtime)",
+        "provider_name": "Anthropic",
+        "current_interface": "Claude Mobile App Interface",
+        "user_language": "English",
+        "user_location": "San Francisco",
+        "enabled_integrations": ["Google Drive Connector", "Gmail Connector"],
+        "permissions_summary": "Read access to Drive files; read and draft access to Gmail",
+    },
+}
+
+DEFAULT_PROFILE: dict[str, Any] = {
+    "model_version": "Claude (Simulated Runtime)",
+    "provider_name": "Anthropic",
+    "current_interface": "Standard Web Chat Interface (claude.ai)",
+    "user_language": "English",
+    "user_location": None,
+    "enabled_integrations": [],
+    "permissions_summary": "No special permissions",
+}
 
 
-def get_session_context(user_id: str) -> dict:
-    print(f"[INFO] Fetching context for user_id: {user_id}...")
+def get_session_context(user_id: str, now: datetime.datetime | None = None) -> dict[str, Any]:
+    """Build the session context dict for ``user_id``.
 
-    if user_id == "user_with_integrations":
-        context = {
-            "model_version": "Claude (Simulated Runtime)",
-            "provider_name": "Anthropic",
-            "current_interface": "Claude Mobile App Interface",
-            "user_language": "English",
-            "user_location": "San Francisco",
-            "enabled_integrations": ["Google Drive Connector", "Gmail Connector"],
-            "permissions_summary": "Read access to Drive files; read and draft access to Gmail",
-            "session_start_time": datetime.datetime.now().isoformat(),
-            "user_id": user_id,
-        }
-    else:
-        context = {
-            "model_version": "Claude (Simulated Runtime)",
-            "provider_name": "Anthropic",
-            "current_interface": "Standard Web Chat Interface (claude.ai)",
-            "user_language": "English",
-            "user_location": None,
-            "enabled_integrations": [],
-            "permissions_summary": "No special permissions",
-            "session_start_time": datetime.datetime.now().isoformat(),
-            "user_id": user_id,
-        }
-
-    print(f"[INFO] Context retrieved: {json.dumps(context, indent=2, ensure_ascii=False)}")
+    :param now: injectable timestamp (defaults to the current time); supplying it
+        makes the output deterministic for tests.
+    """
+    logger.debug("Fetching context for user_id: %s", user_id)
+    base = INTEGRATION_PROFILES.get(user_id, DEFAULT_PROFILE)
+    context = {
+        **base,
+        "session_start_time": (now or datetime.datetime.now()).isoformat(),
+        "user_id": user_id,
+    }
     return context
 
 
-def build_system_prompt(context: dict) -> str:
+def build_system_prompt(context: dict[str, Any]) -> str:
+    """Render the system prompt text from a session ``context`` dict."""
     model_version = context.get("model_version", "Unknown Model")
     provider_name = context.get("provider_name", "the provider")
     current_interface = context.get("current_interface", "Unknown Interface")
@@ -45,7 +66,7 @@ def build_system_prompt(context: dict) -> str:
 
     integrations_str = ", ".join(enabled_integrations) if enabled_integrations else "None"
 
-    prompt_template = f"""
+    return f"""
 # Core Instructions
 
 You are Claude, a large language model ({model_version}), built by {provider_name}. Your goal is to help the user by providing accurate, useful, and safe information and performing tasks within the scope of your capabilities.
@@ -98,28 +119,3 @@ When responding to user questions about your capabilities (for example, "Can you
 
 # End of Instructions
 """
-    return prompt_template
-
-
-if __name__ == "__main__":
-    print("--- Starting Hypothetical AI Model Initialization Script (Generalized) ---")
-
-    current_user_id = "user_with_integrations"
-
-    session_context = get_session_context(current_user_id)
-
-    dynamic_system_prompt = build_system_prompt(session_context)
-
-    print("\n--- Dynamic System Prompt Generated ---")
-    print(
-        f"(Prompt generated for user {session_context['user_id']} using model "
-        f"{session_context['model_version']} from {session_context['provider_name']} "
-        f"in interface '{session_context['current_interface']}' with integrations: "
-        f"{session_context.get('enabled_integrations', [])})"
-    )
-    print("--------------------------------------")
-
-    print("\n[INFO] Initializing model or making first API call with the generated system prompt...")
-    print("[INFO] Conceptual initialization complete. Model is ready with context-aware instructions.")
-
-    print("\n--- Script Finished ---")

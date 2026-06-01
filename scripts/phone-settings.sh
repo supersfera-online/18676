@@ -1,8 +1,13 @@
 #!/data/data/com.termux/files/usr/bin/bash
+#
+# Interactive phone control menu for Termux (Samsung Galaxy S22+).
+
+set -uo pipefail
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+RED='\033[0;31m'
 NC='\033[0m'
 
 show_menu() {
@@ -73,14 +78,21 @@ for s in streams:
     print(f\"  {s['stream']:12s}: {s['volume']}/{s['max_volume']}\")
 "
     echo ""
-    echo "Change volume? (music/ring/alarm/notification)"
+    echo "Change volume? (music/ring/alarm/notification/system/call)"
     read -r stream
-    if [ -n "$stream" ]; then
-        echo "Enter level (0-15):"
-        read -r level
-        termux-volume "$stream" "$level"
-        echo -e "${GREEN}Volume $stream set to $level${NC}"
+    case "$stream" in
+        music|ring|alarm|notification|system|call) ;;
+        "") return ;;
+        *) echo -e "${RED}Invalid stream: $stream${NC}"; return ;;
+    esac
+    echo "Enter level (0-15):"
+    read -r level
+    if ! [[ "$level" =~ ^[0-9]+$ ]] || [ "$level" -gt 15 ]; then
+        echo -e "${RED}Invalid level: $level (expected 0-15)${NC}"
+        return
     fi
+    termux-volume "$stream" "$level"
+    echo -e "${GREEN}Volume $stream set to $level${NC}"
 }
 
 take_photo() {
@@ -114,6 +126,10 @@ vibrate() {
     echo "Vibration duration (ms, default 500):"
     read -r duration
     duration=${duration:-500}
+    if ! [[ "$duration" =~ ^[0-9]+$ ]]; then
+        echo -e "${RED}Invalid duration: $duration${NC}"
+        return
+    fi
     termux-vibrate -d "$duration"
     echo -e "${GREEN}Vibration: ${duration}ms${NC}"
 }

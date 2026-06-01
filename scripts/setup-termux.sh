@@ -1,6 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
+#
+# Install Claude Code on a phone via Termux (tuned for Samsung Galaxy S22+).
+# Safe to re-run: every step is idempotent.
 
-set -e
+set -euo pipefail
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -32,9 +35,9 @@ npm install -g @anthropic-ai/claude-code
 echo -e "${YELLOW}[6/6] Verifying installation...${NC}"
 echo ""
 
-NODE_VER=$(node --version 2>/dev/null || echo "not found")
-NPM_VER=$(npm --version 2>/dev/null || echo "not found")
-CLAUDE_VER=$(claude --version 2>/dev/null || echo "not found")
+NODE_VER="$(node --version 2>/dev/null || echo "not found")"
+NPM_VER="$(npm --version 2>/dev/null || echo "not found")"
+CLAUDE_VER="$(claude --version 2>/dev/null || echo "not found")"
 
 echo -e "  Node.js:     ${GREEN}${NODE_VER}${NC}"
 echo -e "  npm:         ${GREEN}${NPM_VER}${NC}"
