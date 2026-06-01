@@ -1,101 +1,127 @@
-# Session Report
+# ОТЧЁТ О ВЫПОЛНЕННЫХ РАБОТАХ
 
-Honest record of everything done in this session, what was verified, and what
-was **not**. Date: 2026-06-01.
+**Проект:** `claude-phone` (`supersfera-online/18676`)
+**Период:** 2026-06-01 (одна сессия)
+**Исполнитель:** Claude Code (модель `claude-opus-4-8`)
+**Репозиторий / база:** ветка `main`
+**Документ:** отчёт о выполненных работах, редакция 1
 
-## What was merged into `main`
+---
 
-| PR | Title | Status |
-| --- | --- | --- |
-| #4 | `chore: refresh dev/CI tooling to current versions` | merged |
-| #5 | `feat(prompt): build system prompt from real device state` | merged |
-| #6 | `fix(probe): make termux_ready actually detect Termux` | closed (tangled history, superseded by #7) |
-| #7 | `feat: one-click phone install + fix termux_ready probe` | merged |
-| #8 | `feat(android): one-tap APK installer for Claude Code` | merged |
+## 1. Назначение документа
+Зафиксировать полный перечень выполненных работ за сессию, результаты
+верификации, обнаруженные и устранённые дефекты, а также объём работ,
+оставшийся незавершённым и непроверенным. Документ составлен консервативно:
+утверждения о «работает» даются только при наличии наблюдаемого подтверждения.
 
-## 1. Read the docs and reported (the original request)
+## 2. Краткое резюме (Executive summary)
+За сессию выполнены 5 блоков работ, оформленных пятью pull request'ами; четыре
+влиты в `main` (#4, #5, #7, #8), один (#6) закрыт как перекрытый #7. Обновлён
+инструментарий, по-настоящему интегрирован генератор системного промпта,
+исправлен неверный probe `termux_ready`, добавлены установка одной командой и
+APK-установщик «в один тап». **Ключевое ограничение: ни один сценарий не
+запускался на физическом устройстве** — подтверждена только сборка и прохождение
+автотестов/CI, но не работа на телефоне.
 
-Read `docs/` (PLAN, REPORT, ARCHITECTURE, DEFINITIONS, UNCERTAINTIES, …) and
-summarised the project: a STRIPS-style planner-executor (`claude-phone`) that
-bootstraps Claude Code on an Android phone via Termux, tuned for the Galaxy S22+.
+## 3. Объём и исходное состояние
+- Исходно: рабочий Python-пакет (планировщик-исполнитель для Termux), с тестами и
+  CI, но с устаревшим тулингом, формально подключённым генератором промпта,
+  дефектным probe и без удобной установки на телефон.
+- Цель сессии (по запросам пользователя): привести в актуальное состояние,
+  интегрировать промпт, починить логику, обеспечить установку на телефон «в один
+  клик».
 
-## 2. Production-readiness assessment
+## 4. Выполненные работы
 
-- Verdict: solid as a Python package (tests, lint, types, CI), **not** proven as
-  a phone configurator — the entire device layer is mocked and never run on real
-  hardware.
+| № | PR | Содержание | Статус |
+|---|----|-----------|--------|
+| 4.1 | #4 | Актуализация dev/CI-инструментария | Влит |
+| 4.2 | #5 | Интеграция генератора системного промпта | Влит |
+| 4.3 | #6 | Исправление probe `termux_ready` | Закрыт (перекрыт #7) |
+| 4.4 | #7 | Установка одной командой + probe-фикс | Влит |
+| 4.5 | #8 | APK-установщик «в один тап» | Влит |
 
-## 3. Tooling currency refresh (PR #4)
+### 4.1. Актуализация инструментария (#4)
+Подняты pre-commit-хуки (ruff `0.6.9→0.15.x`, mypy `1.11→2.1`, bandit,
+pre-commit-hooks `v5→v6`), повышены нижние границы dev-зависимостей, матрица CI
+расширена до Python 3.10–3.14, обновлены GitHub Actions (`checkout@v5`,
+`setup-python@v6`, `action-shellcheck@2.0.0`). Сопроводительные документы:
+`docs/NEW_PLAN.md`, `docs/NEW_REPORT.md`.
 
-- Pins were ~18 months behind. Bumped pre-commit hooks (ruff `0.6.9→0.15.x`,
-  mypy `1.11→2.1` — a major jump, bandit, pre-commit-hooks `v5→v6`), raised
-  `pyproject` dev floors, extended CI matrix to Python **3.10–3.14**, bumped
-  `actions/checkout@v5` / `setup-python@v6` (Node-24 runtime), pinned
-  `action-shellcheck@2.0.0`.
-- **Verified:** CI green on all five Python versions; ruff/mypy/bandit clean.
-- Docs: `docs/NEW_PLAN.md`, `docs/NEW_REPORT.md`.
+### 4.2. Интеграция генератора промпта (#5)
+Подкоманда `prompt` ранее выдавала статичный обобщённый промпт без связи с
+планировщиком. Введена `get_device_context(state, remnants)`: контекст строится
+из результатов probe и каталога действий; перечисляются только реально доступные
+возможности и оставшиеся шаги настройки; промпт пересобирается при изменении
+состояния. Удалён неиспользуемый флаг `--user` и статичные профили.
 
-## 4. System-prompt builder — real integration (PR #5)
+### 4.3–4.4. Исправление probe `termux_ready` (#7, ранее #6)
+Дефект (UNCERTAINTIES A1): probe `echo $TERMUX_VERSION` всегда завершался кодом
+0 и возвращал `True` вне Termux. Исправлено на `test -n "$TERMUX_VERSION"`.
+`plan` предупреждает вне Termux; `prompt` опирается на probe.
 
-- **Problem found:** the `prompt` subcommand was only mechanically folded in; it
-  emitted a static, generic web-assistant prompt (Gmail/Drive) with **zero**
-  coupling to the planner.
-- **Fix:** `get_device_context(state, remnants)` now derives the prompt from the
-  probed facts + the live action catalogue; it lists only currently-available
-  capabilities and the remaining setup steps, and **regenerates** as the device
-  changes. Removed the dead `--user` flag and the static profiles.
-- **Verified:** 46 tests pass (incl. a rebuild test); CI green.
+### 4.4. Установка одной командой (#7)
+`scripts/bootstrap.sh`: одна команда `curl … | bash` — клонирование/обновление,
+полная настройка, установка ярлыков Termux:Widget (`Claude Code`,
+`Update Claude Code`).
 
-## 5. Fixed the `termux_ready` probe (PR #7, originally #6)
+### 4.5. APK-установщик «в один тап» (#8)
+Каталог `android/`: минимальное Kotlin-приложение, запускающее bootstrap в Termux
+через сервис `RUN_COMMAND`; workflow `.github/workflows/android.yml` собирает
+debug-APK как артефакт.
 
-- **Bug (UNCERTAINTIES A1):** the probe ran `echo $TERMUX_VERSION`, which exits 0
-  everywhere, so it reported `True` even off-device — it never detected Termux.
-- **Fix:** `test -n "$TERMUX_VERSION"`. `plan` now warns when not in Termux;
-  `prompt` lets the probe govern.
-- **Verified:** 48 tests pass; CI green. UNCERTAINTIES A1 marked fixed.
+## 5. Результаты верификации
+- Автотесты: 45 → 46 → 48 (по мере добавления регрессионных тестов) — все
+  проходят.
+- Линт/типы/безопасность: ruff, mypy (strict), bandit — без замечаний.
+- CI: зелёный на Python 3.10–3.14 + shellcheck по всем влитым PR.
+- Android: Gradle-сборка зелёная, APK-артефакт формируется.
 
-## 6. One-command phone install (PR #7)
+## 6. Обнаруженные и устранённые дефекты
+1. probe `termux_ready` всегда `True` вне Termux — исправлен (#7).
+2. `startForegroundService` (API 26+) при `minSdk 24` — падение на старых ОС;
+   заменён на `ContextCompat.startForegroundService` (#8).
+3. `minSdk` = 24 (Android 7) на инструменте под Galaxy S22+ (Android 12) —
+   поднят до 31 (#8).
+4. Возврат ненулевого кода при успешном плане — выявлен ранее, отмечен.
+5. `scripts/bootstrap.sh`: `git pull --ff-only` под `set -e` обрывал скрипт на
+   изменённом/разошедшемся клоне (нарушение заявленной идемпотентности) —
+   заменён на `git fetch` + `git reset --hard origin/main` (найдено код-ревью).
 
-- `scripts/bootstrap.sh`: a single `curl … | bash` paste that clones/updates the
-  repo, runs `setup-termux.sh`, and installs **Termux:Widget** shortcuts
-  (`Claude Code` / `Update Claude Code`).
-- **Verified:** shellcheck + tests green. **Not run on a device.**
+## 7. Незавершённое и непроверенное (риски)
+- **Отсутствует проверка на физическом устройстве.** Все взаимодействия с
+  устройством (`pkg`, `termux-*`, APK, bootstrap) во время выполнения не
+  проверены. CI подтверждает сборку и Python-логику, но не работу на телефоне.
+- **Установка не является буквально «одним кликом».** APK требует установленного
+  Termux и `allow-external-apps=true` для авто-запуска; иначе — запасной путь
+  (команда в буфер → вставка). Два касания на Android неустранимы (разрешение на
+  хранилище, ввод API-ключа).
+- **Мелкое (код-ревью, не исправлено):** при отсутствии действия, производящего
+  `fully_configured`, `get_device_context` сообщит `configured=True` (только при
+  повреждённом каталоге); `_enabling_action` возвращает первое действие, а не
+  «самое дешёвое» по логике планировщика (сейчас безопасно — у фактов один
+  производитель).
+- Прочие пункты `docs/UNCERTAINTIES.md` (оптимальность планировщика, семантика
+  skip/fail исполнителя, тайм-ауты, точность команд Termux) — вне объёма сессии.
 
-## 7. One-tap APK installer (PR #8)
+## 8. Процессные замечания (приняты, без перекладывания)
+- Переиспользование одной ветки под три squash-мержа привело к запутыванию
+  истории и лишнему конфликту (устранено через #7).
+- Избыточное проговаривание статуса вместо результата.
+- Назначение Android `minSdk` без учёта целевого устройства.
 
-- `android/`: a minimal Kotlin app that drives Termux via the `RUN_COMMAND`
-  service to run the bootstrap; CI builds a downloadable debug APK
-  (`.github/workflows/android.yml`).
-- **Bugs I caught by actually reviewing my own work:**
-  - `startForegroundService` is API 26+ → would have crashed; switched to
-    `ContextCompat.startForegroundService`.
-  - `minSdk` was a thoughtless `24` (Android 7) on a tool tuned for the **S22+**,
-    which shipped on Android 12 → raised to `31`.
-- **Verified:** Gradle build green, APK artifact produced.
+## 9. Заключение и рекомендация
+Код приведён в актуальное и логически исправленное состояние; собирается и
+проходит автоматические проверки. **Статус: «готово к проверке», не «проверено
+и работает».** Для перевода в статус «готово» требуется единственное действие:
+установка собранного APK на физический Galaxy S22+ и прохождение сценария
+тап → установка → запуск `claude`.
 
-## What is NOT done / NOT verified (the honest part)
-
-- **Nothing has been run on a real phone.** No Android/Termux device was
-  available; every device interaction (`pkg`, `termux-*`, the APK, the bootstrap)
-  is unverified at runtime. CI proves the code compiles/builds and the Python
-  logic passes — nothing more.
-- **It is not a true "one click."** The APK needs Termux already installed and,
-  for auto-run, `allow-external-apps=true` in `termux.properties`; otherwise it
-  falls back to copy-command-and-paste. Two taps are unavoidable on Android (the
-  storage-permission popup and the API key on first launch).
-- Other `docs/UNCERTAINTIES.md` items (greedy planner optimality, executor
-  skip-vs-fail, timeout defaults, real Termux command/flag correctness) remain
-  open and out of scope for this session.
-
-## Process mistakes made this session (owned, not deflected)
-
-- Reused one branch for three sequential squash-merges, which tangled the history
-  and caused a needless merge conflict (cleaned up via PR #7 on a fresh branch).
-- Over-narrated status instead of just delivering.
-- Set an Android `minSdk` without thinking about the actual target device.
-
-## The one open item to call this "ready"
-
-Install the CI-built APK on the physical Galaxy S22+ and walk the flow
-(tap → install → `claude` launches). On-device behaviour is the only thing that
-turns "builds" into "works".
+## 10. Приложение
+- Влитые PR: #4, #5, #7, #8. Закрыт: #6.
+- Ключевые коммиты в `main`: `0b5a0bb` (#4), `3a08af5` (#5), `bd70c93` (#7),
+  `a49b1a1` (#8).
+- Затронутые области: `pyproject.toml`, `.pre-commit-config.yaml`,
+  `.github/workflows/`, `src/claude_phone/` (`cli.py`, `actions.py`,
+  `prompt_builder.py`), `tests/`, `scripts/bootstrap.sh`, `android/`,
+  `docs/` (`NEW_PLAN.md`, `NEW_REPORT.md`, `UNCERTAINTIES.md`, `SESSION_REPORT.md`).
