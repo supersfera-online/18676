@@ -59,10 +59,13 @@ Legend:
 - **Concern:** Depends on the exact JSON/text field names emitted by the current
   Termux:API version. If the output schema differs (key casing, field rename),
   the grep silently fails and the fact is reported absent.
-- **Severity:** Low · **Confidence:** ~70%
+- **Severity:** Low · **Confidence:** ~95% (raised after doc verification)
 - **How to verify:** Run `termux-wifi-connectioninfo` and
   `termux-battery-status` on-device and confirm the literal substrings `ssid`
   and `percentage` appear.
+- **✓ Verified (docs):** the exact field names `percentage` and `ssid` are
+  confirmed in current Termux:API JSON output — see
+  `docs/UNCERTAINTIES_VERIFICATION.md` (A4). Only the version pin is unconfirmed.
 
 ---
 
@@ -99,8 +102,11 @@ They look right, but "looks right" is precisely the property of a hallucination.
   presence/names depend on Android version and storage layout. The camera action
   writes to `$HOME/storage/dcim/claude_photo.jpg`, assuming `dcim` exists and is
   writable.
-- **Severity:** Low · **Confidence:** ~80%
+- **Severity:** Low · **Confidence:** ~95% (raised after doc verification)
 - **How to verify:** `ls -la $HOME/storage/` after setup.
+- **✓ Verified (docs):** `shared`, `dcim`, and `downloads` are all part of the
+  canonical symlink set created by `termux-setup-storage` — see
+  `docs/UNCERTAINTIES_VERIFICATION.md` (B4).
 
 ### B5. The remaining `termux-*` commands and flags
 - Commands assumed correct but unverified on-device:
@@ -110,9 +116,15 @@ They look right, but "looks right" is precisely the property of a hallucination.
   `termux-notification --title --content`, `termux-camera-photo`,
   `termux-clipboard-get`.
 - **Severity:** Low (most are leaf/optional actions, not on the critical path) ·
-  **Confidence:** ~80%
+  **Confidence:** ~95% (raised after doc verification)
 - **How to verify:** Run each on-device; cross-check flags against the current
   Termux:API docs (https://wiki.termux.com/wiki/Termux:API).
+- **✓ Verified (docs):** every command name and flag is confirmed against the
+  official `termux-api-package` scripts — `-d <ms>` (vibrate), `-p gps`
+  (location), `-l` (sensor), `--title/--content` (notification),
+  `termux-torch [on|off]`, and the existence of `termux-wifi-scaninfo`,
+  `termux-volume`, `termux-camera-photo`, `termux-clipboard-get`,
+  `termux-telephony-deviceinfo`. See `docs/UNCERTAINTIES_VERIFICATION.md` (B5).
 
 ---
 
