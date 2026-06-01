@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 
 /**
  * One-tap installer for Claude Code on the phone.
@@ -73,7 +74,9 @@ class MainActivity : AppCompatActivity() {
             putExtra(EXTRA_SESSION_ACTION, "0")
         }
         try {
-            startForegroundService(intent)
+            // ContextCompat picks startForegroundService (API 26+) or startService
+            // (API 24-25), so this doesn't crash on Android 7.x (our minSdk is 24).
+            ContextCompat.startForegroundService(this, intent)
             Toast.makeText(this, R.string.launched, Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             // RUN_COMMAND blocked (allow-external-apps not enabled) — fall back to
