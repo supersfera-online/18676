@@ -147,8 +147,9 @@ def _run_prompt(args: argparse.Namespace, remnants: list[InformationRemnant]) ->
         state: set[str] = set()
         logger.info("\nSkipping probe; generating prompt for a bare device.")
     else:
+        # The prompt should mirror reality: let the probe decide whether this is
+        # actually Termux rather than asserting termux_ready unconditionally.
         state = probe_reality()
-    state.add("termux_ready")
 
     context = get_device_context(state, remnants)
     prompt = build_system_prompt(context)
@@ -168,7 +169,14 @@ def _run_plan(args: argparse.Namespace, remnants: list[InformationRemnant]) -> i
         logger.info("\nSkipping probe. Initial state: (empty)")
     else:
         initial = probe_reality()
+        if "termux_ready" not in initial:
+            logger.warning(
+                "\nNot running inside Termux ($TERMUX_VERSION unset); "
+                "the plan below is a preview only."
+            )
 
+    # termux_ready is the planner's bootstrap root (every action requires it), so
+    # inject it to keep planning/dry-run usable even off-device for previewing.
     initial.add("termux_ready")
 
     target = set(args.target)
