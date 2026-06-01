@@ -69,8 +69,19 @@ The legacy flag interface (`--probe`, `--list`, `--graph`, `--target`,
 
 ## Documentation
 
+Core:
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the planner works.
 - [SETUP.md](SETUP.md) — installing Claude Code on the phone.
+
+
+Production-readiness & verification:
+- [docs/PLAN.md](docs/PLAN.md) — the production-readiness plan this work followed.
+- [docs/REPORT.md](docs/REPORT.md) — what was actually verified vs. assumed.
+- [docs/DEFINITIONS.md](docs/DEFINITIONS.md) — definitions/logic I am confident in.
+- [docs/DEFINITIONS_VERIFICATION.md](docs/DEFINITIONS_VERIFICATION.md) — those, cross-checked against online sources.
+- [docs/UNCERTAINTIES.md](docs/UNCERTAINTIES.md) — definitions/logic not certain to 100%.
+- [docs/UNCERTAINTIES_VERIFICATION.md](docs/UNCERTAINTIES_VERIFICATION.md) — those, cross-checked against online sources.
+- [docs/JPJJJJJ_LOGIC_IMPACT.md](docs/JPJJJJJ_LOGIC_IMPACT.md) — which partial-match gaps actually change the logic.
 
 ## Development
 
