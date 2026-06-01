@@ -74,8 +74,8 @@ class MainActivity : AppCompatActivity() {
             putExtra(EXTRA_SESSION_ACTION, "0")
         }
         try {
-            // ContextCompat picks startForegroundService (API 26+) or startService
-            // (API 24-25), so this doesn't crash on Android 7.x (our minSdk is 24).
+            // minSdk is 31 (Galaxy S22+), so startForegroundService always exists;
+            // ContextCompat is used purely as the idiomatic, future-proof call.
             ContextCompat.startForegroundService(this, intent)
             Toast.makeText(this, R.string.launched, Toast.LENGTH_LONG).show()
         } catch (e: Exception) {

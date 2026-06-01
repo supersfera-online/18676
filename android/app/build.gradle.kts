@@ -9,7 +9,9 @@ android {
 
     defaultConfig {
         applicationId = "online.supersfera.claudephone"
-        minSdk = 24
+        // The Galaxy S22+ shipped on Android 12 (API 31) and never ran anything
+        // older, so that's our floor — no point supporting phones this never targets.
+        minSdk = 31
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
