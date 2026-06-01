@@ -64,8 +64,8 @@ in this environment (no Android device).
    - Fold it into the package as a `prompt` subcommand.
 
 7. **Documentation**
-   - `README`, `docs/ARCHITECTURE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
-     `SECURITY.md`; fix the broken link in `SETUP.md`; add issue/PR templates.
+   - `README`, `docs/ARCHITECTURE.md`, `CHANGELOG.md`; fix the broken link in
+     `SETUP.md`; add issue/PR templates.
 
 ## Definition of Done
 

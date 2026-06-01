@@ -65,8 +65,8 @@ The same run also surfaced a real defect in the original: it returned a
   `test_prompt_builder`) mocking the Termux/`subprocess` boundary.
 - **CI/tooling:** GitHub Actions (ruff, mypy strict, bandit, pytest,
   shellcheck), `Makefile`, `.pre-commit-config.yaml`, `.editorconfig`.
-- **Docs:** `README`, `docs/ARCHITECTURE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
-  `SECURITY.md`; fixed broken `SETUP.md` link; issue/PR templates.
+- **Docs:** `README`, `docs/ARCHITECTURE.md`, `CHANGELOG.md`; fixed broken
+  `SETUP.md` link; issue/PR templates.
 
 ## 4. Verification actually observed in this environment
 
