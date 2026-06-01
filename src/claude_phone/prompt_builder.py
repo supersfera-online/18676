@@ -1,121 +1,164 @@
-"""Generate a context-aware Claude system prompt.
+"""Generate a system prompt that reflects the phone's *actual* state.
 
-This used to be a standalone demo script; it is now part of the package and is
-exposed through the ``prompt`` CLI subcommand. Session contexts are defined as
-data (:data:`INTEGRATION_PROFILES` / :data:`DEFAULT_PROFILE`) so adding a new
-profile does not mean duplicating prompt-building logic.
+This used to be a standalone demo that emitted a generic web-assistant prompt
+disconnected from the rest of the tool. It is now wired into the planner: the
+prompt is built from the device facts discovered by ``probe_reality`` plus the
+live action catalogue (:func:`claude_phone.actions.phone_remnants`), so it
+always describes what Claude Code can really do on *this* device right now.
+
+Because the context is derived from state, the prompt **regenerates** whenever
+the device changes — re-probe (or re-run ``claude-phone prompt``) and the
+capabilities, configured-status, and remaining setup steps update accordingly.
 """
 
 from __future__ import annotations
 
 import datetime
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from . import config
+
+if TYPE_CHECKING:
+    from .planner import InformationRemnant
 
 logger = logging.getLogger(__name__)
 
-# Profiles keyed by user id. Anything not listed falls back to DEFAULT_PROFILE.
-INTEGRATION_PROFILES: dict[str, dict[str, Any]] = {
-    "user_with_integrations": {
-        "model_version": "Claude (Simulated Runtime)",
-        "provider_name": "Anthropic",
-        "current_interface": "Claude Mobile App Interface",
-        "user_language": "English",
-        "user_location": "San Francisco",
-        "enabled_integrations": ["Google Drive Connector", "Gmail Connector"],
-        "permissions_summary": "Read access to Drive files; read and draft access to Gmail",
-    },
+# Headline capabilities unlocked by each fact. A capability is rendered only when
+# its fact holds in the probed state, so the prompt never claims something the
+# device cannot currently do.
+CAPABILITY_BY_FACT: dict[str, str] = {
+    "claude_installed": "Operate as the Claude Code CLI (installed globally via npm).",
+    "has_internet": "Reach the network (verified by a connectivity probe).",
+    "python_ready": "Run Python 3 scripts.",
+    "nodejs_ready": "Run Node.js.",
+    "git_ready": "Use git for version control.",
+    "storage_accessible": ("Read and write the phone's shared storage (downloads, DCIM/photos)."),
+    "termux_api_ready": (
+        "Control phone hardware through Termux:API — torch, camera, GPS location, "
+        "battery status, sensors, vibration, notifications, clipboard and Wi-Fi info."
+    ),
 }
 
-DEFAULT_PROFILE: dict[str, Any] = {
-    "model_version": "Claude (Simulated Runtime)",
-    "provider_name": "Anthropic",
-    "current_interface": "Standard Web Chat Interface (claude.ai)",
-    "user_language": "English",
-    "user_location": None,
-    "enabled_integrations": [],
-    "permissions_summary": "No special permissions",
-}
+# Fact that marks a fully set-up device, used to locate the "fully configured"
+# action in the catalogue so the required-facts list has a single source of truth.
+_CONFIGURED_FACT = "fully_configured"
 
 
-def get_session_context(user_id: str, now: datetime.datetime | None = None) -> dict[str, Any]:
-    """Build the session context dict for ``user_id``.
+def _core_facts(remnants: list[InformationRemnant]) -> list[str]:
+    """The facts required for a fully-configured device, read from the catalogue.
 
-    :param now: injectable timestamp (defaults to the current time); supplying it
-        makes the output deterministic for tests.
+    Derived from the action that produces :data:`_CONFIGURED_FACT` so this list
+    cannot drift from the planner's own definition of "done".
     """
-    logger.debug("Fetching context for user_id: %s", user_id)
-    base = INTEGRATION_PROFILES.get(user_id, DEFAULT_PROFILE)
-    context = {
-        **base,
+    for r in remnants:
+        if _CONFIGURED_FACT in r.effects:
+            return list(r.preconditions)
+    return []
+
+
+def _enabling_action(fact: str, remnants: list[InformationRemnant]) -> str | None:
+    """Name of the action that would make ``fact`` true (if any)."""
+    for r in remnants:
+        if fact in r.effects:
+            return r.name
+    return None
+
+
+def get_device_context(
+    state: set[str],
+    remnants: list[InformationRemnant],
+    *,
+    now: datetime.datetime | None = None,
+) -> dict[str, Any]:
+    """Build the prompt context from the probed ``state`` and action catalogue.
+
+    :param state: facts currently known to hold (from ``probe_reality``).
+    :param remnants: the live action catalogue.
+    :param now: injectable timestamp (defaults to the current time) so tests are
+        deterministic.
+    """
+    logger.debug("Building device context from %d facts", len(state))
+    core = _core_facts(remnants)
+    missing = [f for f in core if f not in state]
+
+    capabilities = [CAPABILITY_BY_FACT[fact] for fact in CAPABILITY_BY_FACT if fact in state]
+    next_steps = [
+        f"{fact} — run “{action}”"
+        for fact in missing
+        if (action := _enabling_action(fact, remnants)) is not None
+    ]
+
+    return {
+        "phone_model": config.PHONE_MODEL,
         "session_start_time": (now or datetime.datetime.now()).isoformat(),
-        "user_id": user_id,
+        "facts": sorted(state),
+        "configured": not missing,
+        "capabilities": capabilities,
+        "next_steps": next_steps,
     }
-    return context
 
 
 def build_system_prompt(context: dict[str, Any]) -> str:
-    """Render the system prompt text from a session ``context`` dict."""
-    model_version = context.get("model_version", "Unknown Model")
-    provider_name = context.get("provider_name", "the provider")
-    current_interface = context.get("current_interface", "Unknown Interface")
-    user_language = context.get("user_language", "English")
-    user_location = context.get("user_location") or "Not specified"
-    enabled_integrations = context.get("enabled_integrations", [])
-    permissions_summary = context.get("permissions_summary") or "No special permissions"
+    """Render the on-device system prompt text from a device ``context`` dict."""
+    phone_model = context.get("phone_model", "an Android phone")
+    generated_at = context.get("session_start_time", "unknown")
+    configured = context.get("configured", False)
+    facts = context.get("facts", [])
+    capabilities = context.get("capabilities", [])
+    next_steps = context.get("next_steps", [])
 
-    integrations_str = ", ".join(enabled_integrations) if enabled_integrations else "None"
+    status = "fully configured for Claude Code" if configured else "not yet fully configured"
+    facts_str = ", ".join(facts) if facts else "none detected yet"
 
-    return f"""
+    if capabilities:
+        capabilities_block = "\n".join(f"* {cap}" for cap in capabilities)
+    else:
+        capabilities_block = (
+            "* None yet — the device has not been set up. Only basic shell access is available."
+        )
+
+    if next_steps:
+        next_block = "\n".join(f"* {step}" for step in next_steps)
+    else:
+        next_block = "* None — every required component is already in place."
+
+    return f"""\
 # Core Instructions
 
-You are Claude, a large language model ({model_version}), built by {provider_name}. Your goal is to help the user by providing accurate, useful, and safe information and performing tasks within the scope of your capabilities.
+You are Claude Code running inside Termux on a {phone_model} (Android). This
+system prompt is generated from the device's **actual probed state**, so it
+reflects what is genuinely available right now. It is regenerated whenever the
+device changes — never assume a capability that is not listed below.
 
-# Current Session Context (Provided by the platform)
+# Current Device Context (probed)
 
-* **Current interface:** {current_interface}
-* **User language:** {user_language}
-* **User location (if known and relevant):** {user_location}
-* **Active integrations for the user:** {integrations_str}
-* **Granted permissions (brief):** {permissions_summary}
+* **Device:** {phone_model}
+* **Generated at:** {generated_at}
+* **Status:** {status}
+* **Known facts:** {facts_str}
+
+# Capabilities available now
+
+{capabilities_block}
+
+# Remaining setup (not yet available)
+
+{next_block}
 
 # Key Principles
 
-1.  **Privacy and security:** Never request or attempt to access the user's personal data (files, email, contacts, messages, etc.) unless this happens explicitly through a user-activated connector ({integrations_str}) with their explicit permission ({permissions_summary}). Always respect privacy boundaries.
-2.  **Honesty and accuracy:** Describe your capabilities honestly. Do not promise what you cannot do in the current context.
-3.  **Helpfulness:** Strive to help the user achieve their goal, even if the direct request is infeasible. Suggest alternatives or explain how the user can perform the task themselves or with other tools/interfaces of this service.
-
-# Handling Capability Questions
-
-When responding to user questions about your capabilities (for example, "Can you do X?", "Are you able to do Y?", "Find Z in my data"), proceed as follows:
-
-1.  **Evaluate the request in context:** Map the requested capability (X, Y, Z) to your current interface ({current_interface}) and the user's active integrations/permissions ({integrations_str}, {permissions_summary}).
-
-2.  **If the capability is tied to an ACTIVE connector:**
-    * Confirm that it is possible thanks to the "[Connector Name]" connector. (Note for the AI: obtain the exact name from {integrations_str}.)
-    * If executing the action requires user confirmation (e.g., sending an email), be sure to indicate this.
-    * Example: "Yes, I can help draft an email through the Gmail connector [or other name], since you have granted permission. I will compose the text, but sending will require your confirmation."
-    * Example: "Yes, I can search your Google Drive files, since I have access through the Drive connector [or other name] that you have enabled."
-
-3.  **If the capability is tied to an INACTIVE (but existing) connector:**
-    * Explain that this feature exists in the Claude / Anthropic ecosystem, but requires enabling the corresponding "[Connector Name]" connector and/or granting permissions by the user.
-    * Briefly explain where the user can do this (for example, "in the connector settings of this app" or "in your account settings on the platform").
-    * Example: "I cannot search your Gmail at the moment, since the Gmail connector is not active for me right now. You can enable it in your settings so that I can help with email-related tasks."
-
-4.  **If the capability is IMPOSSIBLE for the CURRENT interface but possible in a DIFFERENT one:**
-    * Clearly state that in *this* interface ({current_interface}) it is not possible.
-    * Mention that this feature may be available in another interface (for example, "in the desktop app of this service with the relevant tools enabled").
-    * Example: "In this web chat I cannot run code against your local files. However, this may be available in the desktop app of our service if you enable the corresponding tool and grant the necessary permissions."
-
-5.  **If the capability is fundamentally IMPOSSIBLE (even with connectors):**
-    * Clearly and politely explain why (for example, fundamental privacy and security limitations, technical limitations, or the nature of an LLM).
-    * Example (request for access to files outside connected services): "I cannot directly access local files on your device. This protects your privacy and the security of your data. I can only work with information you provide in the chat, or through connectors you have activated."
-
-6.  **Response style:**
-    * Be clear and concise. Avoid excessive technical jargon.
-    * Implicitly acknowledge the user's possible awareness ("You may know that this service can connect to...").
-    * Respond in the user's language ({user_language}), unless otherwise specified.
-    * When in doubt, always choose the option that ensures maximum privacy and security.
+1.  **Honesty about capabilities:** Only offer to do things backed by a
+    capability under "Capabilities available now". If a capability is missing,
+    say so and point to the setup step that would enable it (run
+    `claude-phone plan` to perform the remaining setup).
+2.  **Phone hardware needs Termux:API:** Torch, camera, GPS, battery, sensors,
+    vibration, notifications, clipboard and Wi-Fi info only work once
+    `termux_api_ready` holds. Do not claim them otherwise.
+3.  **Storage boundaries:** Read or write phone files only when
+    `storage_accessible` holds, and only within the shared storage paths.
+4.  **Privacy and security:** Never access the user's data beyond what the
+    granted capabilities allow; when in doubt, choose the safer option.
 
 # End of Instructions
 """

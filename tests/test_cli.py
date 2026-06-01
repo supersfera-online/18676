@@ -62,14 +62,16 @@ def test_plan_already_achieved_returns_zero():
 
 
 def test_prompt_command_prints(capsys):
-    assert cli.main(["prompt", "--user", "user_with_integrations"]) == 0
+    # --skip-probe makes the generated prompt deterministic (bare device).
+    assert cli.main(["prompt", "--skip-probe"]) == 0
     out = capsys.readouterr().out
-    assert "Gmail Connector" in out
+    assert "Claude Code running inside Termux" in out
+    assert "not yet fully configured" in out
 
 
 def test_prompt_command_writes_file(tmp_path):
     target = tmp_path / "CLAUDE.md"
-    assert cli.main(["prompt", "--output", str(target)]) == 0
+    assert cli.main(["prompt", "--skip-probe", "--output", str(target)]) == 0
     assert "Core Instructions" in target.read_text(encoding="utf-8")
 
 
