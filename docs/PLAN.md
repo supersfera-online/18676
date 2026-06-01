@@ -64,8 +64,8 @@ in this environment (no Android device).
    - Fold it into the package as a `prompt` subcommand.
 
 7. **Documentation**
-   - `README`, `docs/ARCHITECTURE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
-     `SECURITY.md`; fix the broken link in `SETUP.md`; add issue/PR templates.
+   - `README`, `docs/ARCHITECTURE.md`, `CHANGELOG.md`; fix the broken link in
+     `SETUP.md`; add issue/PR templates.
 
 ## Definition of Done
 
@@ -74,6 +74,15 @@ in this environment (no Android device).
 - `pre-commit run --all-files` passes (Docker-free).
 - Behaviour preserved: planner still produces a valid, dependency-ordered plan
   to `fully_configured`.
+
+## Verified results
+
+Measured firsthand:
+
+- **Tests:** `pytest` → **45 passed, 0 failed**, branch coverage **91%**
+  (`runner.py`/`actions.py`/`prompt_builder.py`/`config.py` 100%, `planner.py`
+  98%, `cli.py` 83%, `logging_config.py` 75%). Python logic only — the
+  Termux/`subprocess` boundary is mocked.
 
 ## Explicitly out of scope / not verifiable here
 

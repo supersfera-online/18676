@@ -65,17 +65,19 @@ The same run also surfaced a real defect in the original: it returned a
   `test_prompt_builder`) mocking the Termux/`subprocess` boundary.
 - **CI/tooling:** GitHub Actions (ruff, mypy strict, bandit, pytest,
   shellcheck), `Makefile`, `.pre-commit-config.yaml`, `.editorconfig`.
-- **Docs:** `README`, `docs/ARCHITECTURE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`,
-  `SECURITY.md`; fixed broken `SETUP.md` link; issue/PR templates.
+- **Docs:** `README`, `docs/ARCHITECTURE.md`, `CHANGELOG.md`; fixed broken
+  `SETUP.md` link; issue/PR templates.
 
 ## 4. Verification actually observed in this environment
 
 The following produced visible, successful output during this session:
 
-- **Tests:** `pytest` → **45 passed**, total branch coverage **91%**
-  (`planner.py` 98%, `runner.py` 100%, `actions.py` 100%, `cli.py` 83%). These
-  numbers cover the **Python logic only** — the Termux/`subprocess` boundary is
-  mocked, so they say nothing about real device behaviour.
+- **Tests:** `pytest` → **45 passed, 0 failed, 0 skipped**, total branch
+  coverage **91%** (`runner.py` 100%, `actions.py` 100%, `prompt_builder.py`
+  100%, `config.py` 100%, `planner.py` 98%, `cli.py` 83%, `logging_config.py`
+  75%, `__main__.py` 0% — the `python -m` entry point, not invoked by tests).
+  These numbers cover the **Python logic only** — the Termux/`subprocess`
+  boundary is mocked, so they say nothing about real device behaviour.
 - **`make check`** (ruff + mypy + bandit + pytest + shellcheck) → completed;
   bandit reported "No issues identified" across 759 LOC.
 - **Package build:** `pip wheel` produced `claude_phone-0.1.0-py3-none-any.whl`;

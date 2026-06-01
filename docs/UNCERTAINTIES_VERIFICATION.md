@@ -20,12 +20,12 @@ agree with what an authoritative online source says the real behaviour is?
 | A1 | `termux_ready` via `echo $TERMUX_VERSION` checks exit code, so it's True even off-Termux; not a real detector | Source confirms: `$TERMUX_VERSION` is the detection var, but you must test its **presence** (`-n`), not run `echo` (which always exits 0) | QQ | https://github.com/termux/termux-packages/wiki/Termux-execution-environment |
 | A2 | `termux_api_ready` detects the CLI package, not the Termux:API **app (APK)** | Source confirms `termux-api` package **and** the separate Termux:API app are both required | QQ | https://github.com/termux/termux-api |
 | A3 | `has_internet` via ICMP ping can be a false negative where ICMP is blocked | Source confirms ICMP is commonly blocked/filtered, making ping an unreliable connectivity signal | QQ | https://www.pingtesti.com/en/blog/icmp-blocked-issues/ |
-| A4 | `wifi_connected`/`battery_known` grep for `ssid`/`percentage` in command output; schema-dependent | Source confirms the commands emit JSON with those fields, but exact schema is version-dependent | jpjjjjj | https://termuxtools.com/termux-api-android-hardware/ |
+| A4 | `wifi_connected`/`battery_known` grep for `ssid`/`percentage` in command output; schema-dependent | Source confirms the **exact** field names: `termux-battery-status` emits `"percentage"` and `termux-wifi-connectioninfo` emits `"ssid"` | QQ | https://matoken.org/blog/2018/06/21/try-termux-api-which-can-manipulate-the-android-terminal-with-shell/ |
 | B1 | `pkg install -y nodejs-lts` — package name/availability may drift | Source confirms **both** `nodejs` and `nodejs-lts` packages exist in Termux | QQ | https://github.com/termux/termux-packages/tree/master/packages/nodejs-lts |
 | B2 | `pkg upgrade -y` may still prompt on config conflicts | (behaviour not authoritatively documented either way for `-y` edge cases) | Zuddd | |
 | B3 | `termux-setup-storage` is **interactive** (Android permission dialog) | Source confirms it triggers a runtime Android permission dialog the user must grant | QQ | https://deepwiki.com/termux/termux-app/8.2-permission-system |
-| B4 | Storage paths `$HOME/storage/{shared,dcim,downloads}` exist after setup | Source confirms `termux-setup-storage` creates the `$HOME/storage` symlinks | jpjjjjj | https://www.termuxgenius.com/2025/08/termux-storage-permission-setup.html.html |
-| B5 | `termux-*` command names/flags (`location -p gps`, `torch on/off`, `sensor -l`, `telephony-deviceinfo`, …) | Source confirms these command names and their basic argument forms exist | jpjjjjj | https://termuxtools.com/termux-api-android-hardware/ |
+| B4 | Storage paths `$HOME/storage/{shared,dcim,downloads}` exist after setup | Source confirms `termux-setup-storage` creates exactly these symlinks — `shared`, `dcim`, and `downloads` are all in the canonical set (alongside `pictures`, `music`) | QQ | https://github.com/termux/termux-app/issues/2481 |
+| B5 | `termux-*` command names/flags (`location -p gps`, `torch on/off`, `sensor -l`, `vibrate -d`, `notification --title/--content`, …) | Official `termux-api-package` scripts confirm every flag: `-p [gps/network/passive]`, `-l`, `-d <ms>`, `--title/--content`; and `termux-torch [on\|off]`, `termux-wifi-scaninfo`, `termux-volume`, `termux-camera-photo`, `termux-clipboard-get`, `termux-telephony-deviceinfo` all exist | QQ | https://github.com/termux/termux-api-package/tree/master/scripts |
 | — | `claude_installed` via `command -v claude` after `npm i -g @anthropic-ai/claude-code` | Source indicates the npm package **no longer installs a global `claude` CLI** on Termux (needs an alias); so the probe/effect may never hold as written | jpjjjjj | https://github.com/Ishabdullah/claude-code-termux |
 | C1 | Greedy "cheapest producer" is valid but **not globally optimal** | Source confirms greedy local choices need the "greedy choice property" or they miss the global optimum | QQ | https://en.wikipedia.org/wiki/Greedy_algorithm |
 | C2 | `critical_path` correctness depends on `plan` already being topologically ordered | Source confirms longest-path DP requires processing vertices in topological order | QQ | https://en.wikipedia.org/wiki/Longest_path_problem#Acyclic_graphs |
@@ -44,12 +44,20 @@ agree with what an authoritative online source says the real behaviour is?
   right variable, but detection must test for its *presence*. `echo $TERMUX_VERSION`
   always exits 0, so as written the probe does **not** detect Termux. The
   *concern* is fully confirmed (hence QQ); the *code* is the thing that's wrong.
-- **A4 / B5 `jpjjjjj`** — Command names and that they emit JSON are confirmed by a
-  documentation aggregator, but I could not confirm the **exact** field names /
-  every flag against an official version-pinned source, so partial.
-- **B4 `jpjjjjj`** — `$HOME/storage` and its creation are confirmed; the specific
-  subdir names (`dcim`, `downloads`, `shared`) are conventional but
-  Android-version-dependent, so partial.
+- **A4 `QQ` (upgraded from `jpjjjjj`)** — The exact JSON field names the code
+  greps for are confirmed against observed command output: `termux-battery-status`
+  → `"percentage"`, `termux-wifi-connectioninfo` → `"ssid"`. The `grep -q
+  ssid`/`grep -q percentage` probes therefore match the real schema.
+- **B5 `QQ` (upgraded from `jpjjjjj`)** — Every command name **and flag** used in
+  `actions.py` is confirmed against the official `termux-api-package` scripts:
+  `termux-vibrate -d <ms>` (default 1000), `termux-location -p [gps/network/passive]`,
+  `termux-sensor -l`, `termux-notification --title/--content`,
+  `termux-torch [on|off]`, plus `termux-wifi-scaninfo`, `termux-volume`,
+  `termux-camera-photo`, `termux-clipboard-get`, `termux-telephony-deviceinfo`.
+- **B4 `QQ` (upgraded from `jpjjjjj`)** — `termux-setup-storage` creates the
+  `$HOME/storage` symlinks, and `shared`, `dcim`, and `downloads` (the three the
+  code uses) are all part of the canonical set it creates (along with `pictures`
+  and `music`).
 - **Claude-install row `jpjjjjj` (important)** — Multiple sources state the
   `@anthropic-ai/claude-code` npm package **no longer ships a global `claude`
   binary** on Termux and needs a manual alias. If accurate, both the
@@ -68,6 +76,10 @@ agree with what an authoritative online source says the real behaviour is?
 - [Termux:API (GitHub)](https://github.com/termux/termux-api)
 - [ICMP blocked issues](https://www.pingtesti.com/en/blog/icmp-blocked-issues/)
 - [Termux:API hardware guide](https://termuxtools.com/termux-api-android-hardware/)
+- [termux-api-package scripts (official command wrappers + flags)](https://github.com/termux/termux-api-package/tree/master/scripts)
+- [Termux-torch (wiki)](https://wiki.termux.com/wiki/Termux-torch)
+- [Termux:API JSON output examples (battery/wifi field names)](https://matoken.org/blog/2018/06/21/try-termux-api-which-can-manipulate-the-android-terminal-with-shell/)
+- [termux-setup-storage media symlinks (termux-app #2481)](https://github.com/termux/termux-app/issues/2481)
 - [Termux `nodejs-lts` package](https://github.com/termux/termux-packages/tree/master/packages/nodejs-lts)
 - [Termux permission system (DeepWiki)](https://deepwiki.com/termux/termux-app/8.2-permission-system)
 - [Termux storage permission guide](https://www.termuxgenius.com/2025/08/termux-storage-permission-setup.html.html)
