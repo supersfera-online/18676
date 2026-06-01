@@ -10,23 +10,38 @@ Step-by-step guide to installing Claude Code on a phone via Termux.
 2. Go to https://f-droid.org/
 3. Download and install F-Droid
 4. In F-Droid, find and install **Termux**
-5. Also install **Termux:API** (for access to phone settings)
+5. Also install **Termux:API** (for access to phone settings) and
+   **Termux:Widget** (for a one-tap home-screen launcher)
 
-## Step 2: Run the installation
+## Step 2: One-command install
 
-Open Termux and run the following in order:
+Open Termux and paste this **single line**:
 
 ```bash
-# Download the install script
+pkg install -y curl && curl -fsSL https://raw.githubusercontent.com/supersfera-online/18676/main/scripts/bootstrap.sh | bash
+```
+
+It clones the repo, runs the full setup (toolchain, Termux:API, Claude Code),
+and installs two **Termux:Widget** shortcuts: **Claude Code** (launch) and
+**Update Claude Code** (re-run the bootstrap). Two steps still need a finger:
+tapping *Allow* on the storage-permission popup, and pasting your API key on
+first launch.
+
+### One-tap launch afterwards
+
+1. Long-press your home screen → **Widgets** → add the **Termux:Widget**.
+2. Tap **Claude Code** to launch — or **Update Claude Code** to re-install/update.
+
+### Manual install (if you prefer)
+
+```bash
 pkg install -y git
 git clone https://github.com/supersfera-online/18676.git
 cd 18676
-
-# Run the installation
 bash scripts/setup-termux.sh
 ```
 
-Or manually, if you do not want to clone the repo:
+Or fully manually, without the repo:
 
 ```bash
 pkg update -y && pkg upgrade -y

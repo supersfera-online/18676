@@ -26,14 +26,17 @@ that is actually missing.
 
 ## Installation
 
-On the phone (Termux), see the full guide in [SETUP.md](SETUP.md). The quick path:
+On the phone (Termux), see the full guide in [SETUP.md](SETUP.md). The quick path
+is a single paste into Termux:
 
 ```bash
-pkg install -y git
-git clone https://github.com/supersfera-online/18676.git
-cd 18676
-bash scripts/setup-termux.sh
+pkg install -y curl && curl -fsSL https://raw.githubusercontent.com/supersfera-online/18676/main/scripts/bootstrap.sh | bash
 ```
+
+This clones the repo, runs the full setup, and installs a **Termux:Widget**
+shortcut so every later launch is one tap from the home screen. (Two steps still
+need a finger: tapping *Allow* on the storage-permission popup, and pasting your
+API key on first launch of `claude`.)
 
 For development on any machine:
 

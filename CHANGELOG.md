@@ -7,6 +7,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- One-command phone install: `scripts/bootstrap.sh` (clone/update → setup →
+  Termux:Widget shortcuts), runnable via a single `curl … | bash` paste so later
+  launches are one tap from the home screen.
 - `src/claude_phone/` package layout with `claude-phone` console entry point.
 - `prompt` subcommand that generates a context-aware Claude system prompt
   (integrates the former standalone `claude_prompt_builder.py`).
