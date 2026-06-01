@@ -14,7 +14,10 @@ from .runner import probe, shell
 
 # Probes detect which facts already hold on the device (read-only checks).
 PROBES: dict[str, Callable[[], bool]] = {
-    "termux_ready": probe("echo $TERMUX_VERSION"),
+    # `test -n` exits non-zero when $TERMUX_VERSION is empty/unset, so this is a
+    # real Termux check. (`echo $TERMUX_VERSION` would exit 0 everywhere and thus
+    # always report True — see docs/UNCERTAINTIES.md A1.)
+    "termux_ready": probe('test -n "$TERMUX_VERSION"'),
     "termux_api_ready": probe("command -v termux-battery-status"),
     "storage_accessible": probe("test -d $HOME/storage/shared"),
     "nodejs_ready": probe("command -v node"),

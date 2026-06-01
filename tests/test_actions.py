@@ -30,3 +30,15 @@ def test_fully_configured_is_reachable_from_bootstrap_state():
 
 def test_probes_are_callables():
     assert all(callable(c) for c in PROBES.values())
+
+
+def test_termux_ready_probe_is_false_outside_termux(monkeypatch):
+    """Regression for UNCERTAINTIES A1: the probe must actually detect Termux,
+    not return True everywhere because `echo` always exits 0."""
+    monkeypatch.delenv("TERMUX_VERSION", raising=False)
+    assert PROBES["termux_ready"]() is False
+
+
+def test_termux_ready_probe_is_true_inside_termux(monkeypatch):
+    monkeypatch.setenv("TERMUX_VERSION", "0.118.0")
+    assert PROBES["termux_ready"]() is True
