@@ -75,9 +75,31 @@ in this environment (no Android device).
 - Behaviour preserved: planner still produces a valid, dependency-ordered plan
   to `fully_configured`.
 
+> **Note:** the packaging/planner Definition of Done is met. The real *end*
+> goal — Claude Code actually running on the phone — is blocked **upstream**:
+> the npm package ships no Android native binary (see "Verified results"). That
+> is an Anthropic limitation, not a gap in this repository.
+
+## Verified results
+
+Measured firsthand (full detail in `tests/VERIFICATION_REPORT.md`):
+
+- **Tests:** `pytest` → **45 passed, 0 failed**, branch coverage **91%**
+  (`runner.py`/`actions.py`/`prompt_builder.py`/`config.py` 100%, `planner.py`
+  98%, `cli.py` 83%, `logging_config.py` 75%). Python logic only — the
+  Termux/`subprocess` boundary is mocked.
+- **On-device (emulator):** `scripts/setup-termux.sh` installed Node v24.15.0,
+  npm 11.16.0, Python and Git successfully, **but `@anthropic-ai/claude-code`
+  has no `linux-*-android` build**, so the `fully_configured` goal cannot be
+  reached in reality with the current package. Upstream limitation, not a bug.
+- **Install safety:** Termux runs sandboxed, no root, firmware untouched.
+
 ## Explicitly out of scope / not verifiable here
 
-- Real execution on the Samsung Galaxy S22+ (no device; Termux mocked).
+- Real execution on the **physical** Samsung Galaxy S22+ (arm64): only an
+  x86_64 emulator was exercised. The emulator run confirmed the toolchain path
+  and surfaced the Android blocker; per-command Termux correctness on real
+  hardware remains unverified (`docs/UNCERTAINTIES.md`).
 - CI status on the real GitHub Actions backend (the connected GitHub here is a
   local stand-in that does not report Actions runs).
 - Correctness of individual Termux command names/flags against a live device —
