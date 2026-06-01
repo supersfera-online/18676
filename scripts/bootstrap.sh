@@ -28,9 +28,10 @@ pkg install -y git
 if [ -d "$INSTALL_DIR/.git" ]; then
     # Update in a way that stays idempotent even if the clone was modified or
     # diverged: a plain `git pull --ff-only` would fail under `set -e` and abort
-    # the whole bootstrap. fetch + hard reset always lands on the latest main.
+    # the whole bootstrap. Resetting to FETCH_HEAD lands on exactly what we just
+    # fetched, regardless of whether the origin/main tracking ref was updated.
     git -C "$INSTALL_DIR" fetch origin main
-    git -C "$INSTALL_DIR" reset --hard origin/main
+    git -C "$INSTALL_DIR" reset --hard FETCH_HEAD
 else
     git clone "$REPO_URL" "$INSTALL_DIR"
 fi
