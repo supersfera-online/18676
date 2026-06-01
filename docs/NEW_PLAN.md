@@ -1,5 +1,9 @@
 # New Plan — Dependency & Tooling Currency Refresh
 
+> **Status: implemented** on branch `claude/documentation-read-report-bB4FM`
+> (commit `06a39e0`). See `docs/NEW_REPORT.md` for what was actually done and
+> verified.
+
 ## Context
 
 The shipped application has **zero runtime dependencies**, so the software
