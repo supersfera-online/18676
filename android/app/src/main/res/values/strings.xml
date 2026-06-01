@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Claude Code Installer</string>
+    <string name="tagline">Installs Claude Code into Termux and launches it. The same command is copied to your clipboard as a backup.</string>
+    <string name="install_button">Install / Launch</string>
+    <string name="get_termux_button">Get Termux (F-Droid)</string>
+    <string name="launched">Running the installer in Termux…</string>
+    <string name="paste_fallback">Couldn\'t auto-run. Command copied — paste it in Termux.</string>
+    <string name="open_browser_failed">No browser found to open F-Droid.</string>
+</resources>
