@@ -78,15 +78,6 @@ The following produced visible, successful output during this session:
   75%, `__main__.py` 0% — the `python -m` entry point, not invoked by tests).
   These numbers cover the **Python logic only** — the Termux/`subprocess`
   boundary is mocked, so they say nothing about real device behaviour.
-- **On-device deployment (emulator):** on a Samsung Galaxy S22+ emulator
-  (Android 16 / API 36, x86_64), Termux bootstrapped and `scripts/setup-termux.sh`
-  ran successfully — **Node.js v24.15.0**, **npm 11.16.0**, Python and Git all
-  installed and working. However, **Claude Code (`@anthropic-ai/claude-code`)
-  does not run on Android**: its postinstall reported that no native binary for
-  `linux-x64-android` exists (available targets: `darwin-arm64`, `darwin-x64`,
-  `linux-x64`, `linux-arm64`, `linux-x64-musl`, `linux-arm64-musl`, `win32-x64`,
-  `win32-arm64`). This is an **upstream limitation (Anthropic), not a bug in this
-  repository**. Details in `tests/VERIFICATION_REPORT.md`.
 - **`make check`** (ruff + mypy + bandit + pytest + shellcheck) → completed;
   bandit reported "No issues identified" across 759 LOC.
 - **Package build:** `pip wheel` produced `claude_phone-0.1.0-py3-none-any.whl`;
@@ -97,14 +88,9 @@ The following produced visible, successful output during this session:
 
 ## 5. Not verified here (and why)
 
-- **Real device behaviour (Samsung Galaxy S22+, Termux):** partially verified on
-  an **x86_64 emulator** (Android 16 / API 36), not on real arm64 hardware. The
-  emulator run confirmed the toolchain install path and surfaced the Android
-  blocker above; the conclusion that Claude Code has no Android build holds for
-  arm64 too, since `linux-arm64-android` is likewise absent from the available
-  targets. Still unverified on a physical device: correctness of individual
-  `pkg`/`termux-*` command names, flags, and probe semantics at runtime — the
-  unit tests mock this boundary.
+- **Real device behaviour (Samsung Galaxy S22+, Termux):** no device is
+  available and Termux commands are absent, so every `pkg`/`termux-*`
+  interaction is unverified at runtime. The tests mock this boundary.
 - **CI status on real GitHub Actions:** the GitHub backend connected in this
   environment is a local stand-in (127.0.0.1) that does not report Actions runs.
   The same checks were run locally instead.
@@ -113,17 +99,7 @@ The following produced visible, successful output during this session:
   hallucination does — so each is itemised in `docs/UNCERTAINTIES.md` with a
   severity, a confidence estimate, and a concrete way to verify it.
 
-## 6. Bottom line
-
-- The project's **Python logic is green**: 45/45 tests pass at 91% branch
-  coverage, and the planner produces a correct, dependency-ordered plan.
-- The end goal **"run Claude Code on the phone via the current npm package" is
-  not achievable**: there is no Android (`linux-*-android`) native build —
-  an upstream limitation, not a defect in this code.
-- **Installation is safe:** Termux runs in the app sandbox, no root is required,
-  and system partitions/firmware are untouched — the device is not bricked.
-
-## 7. Honest caveats about this report
+## 6. Honest caveats about this report
 
 - "Works and is coherent" (Section 2) is **not** the same as "correct in every
   detail." The planner algorithm is verified; the *domain content* (which Termux
@@ -134,9 +110,8 @@ The following produced visible, successful output during this session:
   device-dependent claims are quarantined in `UNCERTAINTIES.md` rather than
   asserted here.
 
-## 8. Companion documents
+## 7. Companion documents
 
 - `docs/PLAN.md` — the plan this work followed.
 - `docs/UNCERTAINTIES.md` — everything not certain to 100%, with how to verify.
 - `docs/ARCHITECTURE.md` — design of the planner/executor.
-- `tests/VERIFICATION_REPORT.md` — firsthand test + on-device emulator results.
