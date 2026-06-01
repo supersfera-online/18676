@@ -21,18 +21,20 @@ Legend:
 
 ## A. Probe logic (state detection) — `src/claude_phone/actions.py`
 
-### A1. `termux_ready` probe likely always returns True
-- **What it does:** `probe("echo $TERMUX_VERSION")` → fact `termux_ready`.
+### A1. `termux_ready` probe likely always returns True — ✓ FIXED
+- **What it did:** `probe("echo $TERMUX_VERSION")` → fact `termux_ready`.
 - **Concern:** `echo` exits 0 regardless of whether `$TERMUX_VERSION` is set or
-  empty. The probe checks the **exit code**, not the output, so this almost
-  certainly reports `True` even on a non-Termux system. It does not actually
-  detect Termux. (Note: `main`/`cli` also unconditionally adds `termux_ready`
-  to the initial state, so the probe is partly moot — but as written it is not a
-  real check.)
-- **Severity:** Low–Medium · **Confidence it's correct as a detector:** ~10%
-- **How to verify:** Run on a non-Termux shell; observe it returns True. A
-  correct check would be e.g. `test -n "$TERMUX_VERSION"` or
-  `command -v termux-info`.
+  empty. The probe checks the **exit code**, not the output, so it reported
+  `True` even on a non-Termux system; it did not actually detect Termux.
+- **Severity:** Low–Medium · **Confidence it was correct as a detector:** ~10%
+- **✓ Fixed:** the probe is now `probe('test -n "$TERMUX_VERSION"')`, which exits
+  non-zero when the variable is empty/unset and therefore genuinely detects
+  Termux. Covered by `tests/test_actions.py`
+  (`test_termux_ready_probe_is_false_outside_termux` /
+  `..._is_true_inside_termux`). The `plan`/`prompt` commands no longer assert the
+  fact blindly: `plan` warns when not in Termux (still injecting it as the
+  planner's bootstrap root so dry-run previews work), and `prompt` lets the probe
+  decide so the generated prompt mirrors reality.
 
 ### A2. `termux_api_ready` detects the CLI, not the Termux:API app
 - **What it does:** `probe("command -v termux-battery-status")`.
