@@ -20,7 +20,9 @@ that is actually missing.
 - Reality probing: detects what is already installed/available before planning.
 - Dry-run mode to preview the plan without touching the device.
 - 24 phone actions (install toolchain, Termux:API, torch, battery, GPS, camera, …).
-- `prompt` subcommand that generates a context-aware Claude system prompt.
+- `prompt` subcommand that generates a Claude Code system prompt from the device's
+  real probed state — it lists only the capabilities actually available and
+  regenerates as the device changes.
 
 ## Installation
 
@@ -58,8 +60,9 @@ claude-phone probe
 # Aim for a specific fact
 claude-phone plan --target battery_known
 
-# Generate a Claude system prompt
-claude-phone prompt --user user_with_integrations
+# Generate a system prompt from the phone's actual probed state
+claude-phone prompt
+claude-phone prompt --skip-probe          # prompt for a bare (un-set-up) device
 claude-phone prompt --output CLAUDE.md
 ```
 

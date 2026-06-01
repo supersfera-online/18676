@@ -17,7 +17,7 @@ from . import config
 from .actions import PROBES, phone_remnants
 from .logging_config import configure_logging
 from .planner import Executor, InformationRemnant, Planner
-from .prompt_builder import build_system_prompt, get_session_context
+from .prompt_builder import build_system_prompt, get_device_context
 
 logger = logging.getLogger("claude_phone")
 
@@ -119,8 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-probe", action="store_true", help="Do not probe reality; assume nothing is present"
     )
 
-    # prompt options
-    parser.add_argument("--user", default="default", help="User id for the prompt subcommand")
+    # prompt options (the prompt also honours the global --skip-probe flag)
     parser.add_argument(
         "--output", help="Write the generated prompt to this file instead of stdout"
     )
@@ -143,8 +142,15 @@ def _resolve_command(args: argparse.Namespace) -> str:
     return str(args.command)
 
 
-def _run_prompt(args: argparse.Namespace) -> int:
-    context = get_session_context(args.user)
+def _run_prompt(args: argparse.Namespace, remnants: list[InformationRemnant]) -> int:
+    if args.skip_probe:
+        state: set[str] = set()
+        logger.info("\nSkipping probe; generating prompt for a bare device.")
+    else:
+        state = probe_reality()
+    state.add("termux_ready")
+
+    context = get_device_context(state, remnants)
     prompt = build_system_prompt(context)
     if args.output:
         with open(args.output, "w", encoding="utf-8") as fh:
@@ -213,7 +219,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         probe_reality()
         return 0
     if command == "prompt":
-        return _run_prompt(args)
+        return _run_prompt(args, remnants)
     return _run_plan(args, remnants)
 
 

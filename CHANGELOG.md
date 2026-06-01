@@ -18,6 +18,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Documentation: real `README`, `docs/ARCHITECTURE.md`, and this changelog.
 
 ### Changed
+- The `prompt` subcommand now builds the system prompt from the device's **actual
+  probed state** and the live action catalogue instead of a static demo profile:
+  it lists only the capabilities currently available and the remaining setup
+  steps, and regenerates as the device changes. Removed the unused `--user` flag
+  and the hard-coded integration profiles.
 - Replaced `print`-based output with the `logging` module; added `-v`/`-q` flags.
 - `subprocess` calls now have timeouts; a hung command is a soft failure instead
   of blocking the run.
