@@ -15,8 +15,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - GitHub Actions CI: ruff, mypy (strict), bandit, pytest+coverage across
   Python 3.10–3.12, shellcheck, and a tag-triggered release job.
 - Tooling: `pyproject.toml`, `pre-commit`, `.editorconfig`, `Makefile`.
-- Documentation: real `README`, `docs/ARCHITECTURE.md`, `CONTRIBUTING`,
-  `SECURITY`, this changelog.
+- Documentation: real `README`, `docs/ARCHITECTURE.md`, and this changelog.
 
 ### Changed
 - Replaced `print`-based output with the `logging` module; added `-v`/`-q` flags.

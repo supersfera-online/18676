@@ -71,7 +71,6 @@ The legacy flag interface (`--probe`, `--list`, `--graph`, `--target`,
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the planner works.
 - [SETUP.md](SETUP.md) — installing Claude Code on the phone.
-- [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup and workflow.
 
 ## Development
 
