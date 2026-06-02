@@ -26,7 +26,6 @@ echo -e "${GREEN}=== Claude Code — one-tap bootstrap ===${NC}"
 echo -e "${YELLOW}[1/3] Fetching the project...${NC}"
 pkg install -y git
 if [ -d "$INSTALL_DIR/.git" ]; then
-    git -C "$INSTALL_DIR" pull --ff-only
     # Update in a way that stays idempotent even if the clone was modified or
     # diverged: a plain `git pull --ff-only` would fail under `set -e` and abort
     # the whole bootstrap. Resetting to FETCH_HEAD lands on exactly what we just
